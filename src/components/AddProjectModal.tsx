@@ -80,11 +80,11 @@ export default function AddProjectModal({ onClose }: AddProjectModalProps) {
       onClick={handleBackdropClick}
     >
       <div
-        className={`w-full max-w-md max-h-[90vh] overflow-y-auto rounded-2xl border border-white/[0.08] bg-[#12121a] shadow-2xl transition-all duration-200 sm:max-h-none sm:mx-0 mx-2 ${
+        className={`w-full max-w-md max-h-[90vh] overflow-visible rounded-2xl border border-white/[0.08] bg-[#12121a] shadow-2xl transition-all duration-200 sm:max-h-none sm:mx-0 mx-2 ${
           visible ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
         }`}
       >
-        <div className="p-6">
+        <div className="p-6 overflow-visible">
           <h2 className="text-xl font-bold text-white mb-6">Add a new project</h2>
 
           {/* URL input */}
@@ -113,7 +113,7 @@ export default function AddProjectModal({ onClose }: AddProjectModalProps) {
           </div>
 
           {/* Owner select */}
-          <div className="mb-6">
+          <div className="mb-6 relative z-20">
             <label className="block text-xs font-medium text-white/40 mb-2">Owner</label>
             <div ref={selectRef} className="relative">
               <button
@@ -136,7 +136,7 @@ export default function AddProjectModal({ onClose }: AddProjectModalProps) {
               </button>
 
               {selectOpen && (
-                <div className="absolute top-full left-0 right-0 mt-1 rounded-xl border border-white/[0.08] bg-[#1a1a26] shadow-xl overflow-hidden z-10">
+                <div className="absolute top-full left-0 right-0 mt-1 rounded-xl border border-white/[0.08] bg-[#1a1a26] shadow-xl overflow-hidden z-[100]">
                   {uniqueOwners.map((name) => (
                     <button
                       key={name}
