@@ -20,10 +20,6 @@ export default function PreviewModal({ project, onClose }: PreviewModalProps) {
     setTimeout(onClose, 200)
   }
 
-  const handleBackdropClick = (e: React.MouseEvent) => {
-    if (e.target === e.currentTarget) handleClose()
-  }
-
   const truncatedUrl =
     project.url.length > 60
       ? project.url.slice(0, 60) + '…'
