@@ -5,6 +5,7 @@ import {
   addDoc,
   deleteDoc,
   updateDoc,
+  getDoc,
   runTransaction,
   arrayUnion,
   arrayRemove,
@@ -96,16 +97,19 @@ export const useAppStore = create<AppState>()((set, get) => ({
     const { currentUser } = get()
     if (!currentUser) return
 
+    // Check if project still exists before attempting vote
+    const projectRef = doc(db, 'projects', projectId)
+    const projectCheck = await getDoc(projectRef)
+    if (!projectCheck.exists()) return 'project_deleted'
+
     const userVotes = get().votes[currentUser.id] ?? []
     const alreadyVoted = userVotes.includes(projectId)
-
-    const projectRef = doc(db, 'projects', projectId)
     const voteRef = doc(db, 'votes', currentUser.id)
 
     if (alreadyVoted) {
       await runTransaction(db, async (transaction) => {
         const projectSnap = await transaction.get(projectRef)
-        if (!projectSnap.exists()) return 'project_deleted'
+        if (!projectSnap.exists()) return
         const currentVotes = projectSnap.data().votes ?? 0
         transaction.update(projectRef, { votes: Math.max(0, currentVotes - 1) })
         transaction.set(
@@ -118,7 +122,7 @@ export const useAppStore = create<AppState>()((set, get) => ({
       if (userVotes.length >= 3) return 'max_reached'
       await runTransaction(db, async (transaction) => {
         const projectSnap = await transaction.get(projectRef)
-        if (!projectSnap.exists()) return 'project_deleted'
+        if (!projectSnap.exists()) return
         const currentVotes = projectSnap.data().votes ?? 0
         transaction.update(projectRef, { votes: currentVotes + 1 })
         transaction.set(

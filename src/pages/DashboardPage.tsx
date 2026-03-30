@@ -53,7 +53,13 @@ export default function DashboardPage() {
               key={project.id}
               project={project}
               hasVoted={userVotes.includes(project.id)}
-              onToggleVote={() => toggleVote(project.id)}
+              onToggleVote={async () => {
+                const result = await toggleVote(project.id)
+                if (result === 'project_deleted') {
+                  showToast('This project was just deleted.')
+                }
+                return result
+              }}
               onMaxVotes={() => showToast("You've used all 3 votes! Remove a vote to vote again.")}
               onDelete={isAdmin ? () => setDeleteTarget({ id: project.id, title: project.title }) : undefined}
             />

@@ -20,6 +20,7 @@ export default function ProjectCard({ project, hasVoted, onToggleVote, onMaxVote
       onMaxVotes()
       return
     }
+    if (result === 'project_deleted') return
     // Trigger bounce
     setBouncing(true)
     clearTimeout(bounceTimer.current)
