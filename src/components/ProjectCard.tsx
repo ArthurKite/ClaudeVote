@@ -12,7 +12,7 @@ interface ProjectCardProps {
 export default function ProjectCard({ project, hasVoted, onToggleVote, onMaxVotes, onDelete }: ProjectCardProps) {
   const [imgError, setImgError] = useState(false)
   const [bouncing, setBouncing] = useState(false)
-  const bounceTimer = useRef<ReturnType<typeof setTimeout>>()
+  const bounceTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
   const handleVote = () => {
     const result = onToggleVote()
