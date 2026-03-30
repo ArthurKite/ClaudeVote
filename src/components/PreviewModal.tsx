@@ -33,17 +33,19 @@ export default function PreviewModal({ project, onClose }: PreviewModalProps) {
   const screenshotUrl = `https://api.microlink.io/?url=${encodeURIComponent(project.url)}&screenshot=true&meta=false&embed=screenshot.url&screenshot.width=1280&screenshot.height=800`
 
   return (
-    <div
-      className={`fixed inset-0 z-50 flex items-center justify-center p-4 transition-all duration-200 ${
-        visible ? 'bg-black/70 backdrop-blur-sm' : 'bg-black/0'
-      }`}
-      onClick={handleBackdropClick}
-    >
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      {/* Backdrop — covers entire screen, click to close */}
       <div
-        className={`w-[90vw] h-[85vh] flex flex-col rounded-2xl border border-white/[0.08] bg-[#12121a] shadow-2xl transition-all duration-200 ${
+        className={`absolute inset-0 transition-all duration-200 ${
+          visible ? 'bg-black/70 backdrop-blur-sm' : 'bg-black/0'
+        }`}
+        onClick={handleClose}
+      />
+      {/* Modal card */}
+      <div
+        className={`relative w-[90vw] h-[85vh] flex flex-col rounded-2xl border border-white/[0.08] bg-[#12121a] shadow-2xl transition-all duration-200 ${
           visible ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
         }`}
-        onClick={(e) => e.stopPropagation()}
       >
         {/* Top bar */}
         <div className="flex items-center justify-between px-5 py-3 border-b border-white/[0.06] shrink-0">
