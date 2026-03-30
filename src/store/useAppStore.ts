@@ -22,7 +22,7 @@ interface AppState {
   votes: Record<string, string[]>
 
   registerUser: (name: string, role: 'player' | 'admin') => void
-  logout: () => void
+  logout: () => Promise<void>
   addProject: (url: string, title: string, owner: string) => Promise<void>
   deleteProject: (projectId: string) => Promise<void>
   toggleVote: (projectId: string) => Promise<string | void>
@@ -47,7 +47,17 @@ export const useAppStore = create<AppState>()((set, get) => ({
     set({ currentUser: user })
   },
 
-  logout: () => {
+  logout: async () => {
+    // Remove session doc if exists
+    const sessionId = sessionStorage.getItem('claudevote-session-id')
+    if (sessionId) {
+      try {
+        await deleteDoc(doc(db, 'sessions', sessionId))
+      } catch {
+        // Best-effort cleanup
+      }
+      sessionStorage.removeItem('claudevote-session-id')
+    }
     sessionStorage.removeItem('claudevote-user')
     set({ currentUser: null })
   },
