@@ -59,9 +59,10 @@ export default function StatsPage() {
       </div>
 
       {/* Ranked table */}
-      <div className="rounded-xl border border-white/[0.06] bg-white/[0.03] overflow-hidden">
+      <div className="rounded-xl border border-white/[0.06] bg-white/[0.03] overflow-x-auto">
+        <div className="min-w-[600px]">
         {/* Header */}
-        <div className="grid grid-cols-[3rem_1fr_10rem_4rem_12rem] gap-4 px-5 py-3 border-b border-white/[0.06] text-xs font-medium text-white/30 uppercase tracking-wider">
+        <div className="grid grid-cols-[3rem_1fr_8rem_4rem_10rem] gap-4 px-5 py-3 border-b border-white/[0.06] text-xs font-medium text-white/30 uppercase tracking-wider">
           <span>#</span>
           <span>Project</span>
           <span>Owner</span>
@@ -77,7 +78,7 @@ export default function StatsPage() {
           return (
             <div
               key={project.id}
-              className={`grid grid-cols-[3rem_1fr_10rem_4rem_12rem] gap-4 px-5 py-4 items-center border-b border-white/[0.04] last:border-b-0 transition-colors ${
+              className={`grid grid-cols-[3rem_1fr_8rem_4rem_10rem] gap-4 px-5 py-4 items-center border-b border-white/[0.04] last:border-b-0 transition-colors ${
                 isFirst ? 'bg-amber-500/[0.04]' : 'hover:bg-white/[0.02]'
               }`}
               style={{
@@ -116,6 +117,7 @@ export default function StatsPage() {
         })}
       </div>
 
+      </div>
       {/* Keyframe animations */}
       <style>{`
         @keyframes statsRowIn {

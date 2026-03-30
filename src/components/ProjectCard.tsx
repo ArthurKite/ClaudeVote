@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import type { Project } from '../types'
 
 interface ProjectCardProps {
@@ -10,10 +10,19 @@ interface ProjectCardProps {
 
 export default function ProjectCard({ project, hasVoted, onToggleVote, onMaxVotes }: ProjectCardProps) {
   const [imgError, setImgError] = useState(false)
+  const [bouncing, setBouncing] = useState(false)
+  const bounceTimer = useRef<ReturnType<typeof setTimeout>>()
 
   const handleVote = () => {
     const result = onToggleVote()
-    if (result === 'max_reached') onMaxVotes()
+    if (result === 'max_reached') {
+      onMaxVotes()
+      return
+    }
+    // Trigger bounce
+    setBouncing(true)
+    clearTimeout(bounceTimer.current)
+    bounceTimer.current = setTimeout(() => setBouncing(false), 300)
   }
 
   const truncatedUrl = project.url.replace(/^https?:\/\//, '').slice(0, 40) + (project.url.length > 48 ? '…' : '')
@@ -54,7 +63,11 @@ export default function ProjectCard({ project, hasVoted, onToggleVote, onMaxVote
                 : 'bg-white/[0.04] text-white/40 hover:bg-white/[0.08] hover:text-white/60'
             }`}
           >
-            <span>👍</span>
+            <span
+              className={`inline-block transition-transform duration-300 ${
+                bouncing ? 'animate-[voteBounce_0.3s_ease-out]' : ''
+              }`}
+            >👍</span>
             <span className="font-medium">{project.votes}</span>
           </button>
         </div>

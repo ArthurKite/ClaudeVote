@@ -31,7 +31,7 @@ export default function RegisterPage() {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(59,130,246,0.08),_transparent_60%)] animate-[pulse_12s_ease-in-out_infinite_4s]" />
       </div>
 
-      <div className="relative z-10 w-full max-w-md px-6">
+      <div className="relative z-10 w-full max-w-md px-4 sm:px-6">
         {/* Title */}
         <h1 className="text-center text-5xl font-bold tracking-tight text-white mb-10">
           <span className="bg-gradient-to-r from-indigo-400 via-purple-400 to-blue-400 bg-clip-text text-transparent drop-shadow-[0_0_30px_rgba(129,140,248,0.4)]">

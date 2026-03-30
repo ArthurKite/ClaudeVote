@@ -64,7 +64,7 @@ export default function AddProjectModal({ onClose }: AddProjectModalProps) {
       onClick={handleBackdropClick}
     >
       <div
-        className={`w-full max-w-md rounded-2xl border border-white/[0.08] bg-[#12121a] shadow-2xl transition-all duration-200 ${
+        className={`w-full max-w-md max-h-[90vh] overflow-y-auto rounded-2xl border border-white/[0.08] bg-[#12121a] shadow-2xl transition-all duration-200 sm:max-h-none sm:mx-0 mx-2 ${
           visible ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
         }`}
       >
