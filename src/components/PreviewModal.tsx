@@ -8,7 +8,8 @@ interface PreviewModalProps {
 
 export default function PreviewModal({ project, onClose }: PreviewModalProps) {
   const [visible, setVisible] = useState(false)
-  const [iframeError, setIframeError] = useState(false)
+  const [imgError, setImgError] = useState(false)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     requestAnimationFrame(() => setVisible(true))
@@ -27,6 +28,9 @@ export default function PreviewModal({ project, onClose }: PreviewModalProps) {
     project.url.length > 60
       ? project.url.slice(0, 60) + '…'
       : project.url
+
+  // Use Microlink to get a high-res screenshot preview
+  const screenshotUrl = `https://api.microlink.io/?url=${encodeURIComponent(project.url)}&screenshot=true&meta=false&embed=screenshot.url&screenshot.width=1280&screenshot.height=800`
 
   return (
     <div
@@ -63,9 +67,18 @@ export default function PreviewModal({ project, onClose }: PreviewModalProps) {
           </button>
         </div>
 
-        {/* Iframe content */}
-        <div className="flex-1 overflow-hidden rounded-b-2xl">
-          {iframeError ? (
+        {/* Screenshot preview */}
+        <div className="flex-1 overflow-auto rounded-b-2xl relative">
+          {loading && !imgError && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="flex flex-col items-center gap-3">
+                <div className="w-8 h-8 border-2 border-indigo-400/30 border-t-indigo-400 rounded-full animate-spin" />
+                <p className="text-xs text-white/30">Loading preview…</p>
+              </div>
+            </div>
+          )}
+
+          {imgError ? (
             <div className="w-full h-full flex flex-col items-center justify-center gap-4">
               <div className="w-16 h-16 rounded-2xl bg-white/[0.04] border border-white/[0.06] flex items-center justify-center">
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" className="text-white/20 stroke-current">
@@ -73,7 +86,7 @@ export default function PreviewModal({ project, onClose }: PreviewModalProps) {
                   <path d="M15 9l-6 6M9 9l6 6" strokeWidth="1.5" strokeLinecap="round" />
                 </svg>
               </div>
-              <p className="text-sm text-white/40">This site cannot be previewed</p>
+              <p className="text-sm text-white/40">Preview unavailable</p>
               <a
                 href={project.url}
                 target="_blank"
@@ -84,13 +97,27 @@ export default function PreviewModal({ project, onClose }: PreviewModalProps) {
               </a>
             </div>
           ) : (
-            <iframe
-              src={project.url}
-              title={`Preview of ${project.title}`}
-              className="w-full h-full border-0"
-              onError={() => setIframeError(true)}
-              sandbox="allow-scripts allow-same-origin allow-popups"
+            <img
+              src={screenshotUrl}
+              alt={`Preview of ${project.title}`}
+              className={`w-full h-auto transition-opacity duration-300 ${loading ? 'opacity-0' : 'opacity-100'}`}
+              onLoad={() => setLoading(false)}
+              onError={() => { setImgError(true); setLoading(false) }}
             />
+          )}
+
+          {/* Open in new tab floating button */}
+          {!imgError && !loading && (
+            <div className="sticky bottom-4 flex justify-center pb-2">
+              <a
+                href={project.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-4 py-2 rounded-xl bg-indigo-500/90 hover:bg-indigo-500 text-white text-sm font-medium shadow-lg shadow-black/30 backdrop-blur-sm transition-all"
+              >
+                Open in new tab →
+              </a>
+            </div>
           )}
         </div>
       </div>
