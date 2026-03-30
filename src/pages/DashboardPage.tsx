@@ -3,11 +3,15 @@ import { useAppStore } from '../store/useAppStore'
 import ProjectCard from '../components/ProjectCard'
 import Toast from '../components/Toast'
 import AddProjectModal from '../components/AddProjectModal'
+import ConfirmModal from '../components/ConfirmModal'
 
 export default function DashboardPage() {
-  const { currentUser, projects, toggleVote, getVotesForUser } = useAppStore()
+  const { currentUser, projects, toggleVote, deleteProject, getVotesForUser } = useAppStore()
   const [toast, setToast] = useState<string | null>(null)
   const [showModal, setShowModal] = useState(false)
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; title: string } | null>(null)
+
+  const isAdmin = currentUser?.role === 'admin'
 
   const userVotes = currentUser ? getVotesForUser(currentUser.id) : []
 
@@ -51,13 +55,25 @@ export default function DashboardPage() {
               hasVoted={userVotes.includes(project.id)}
               onToggleVote={() => toggleVote(project.id)}
               onMaxVotes={() => showToast("You've used all 3 votes! Remove a vote to vote again.")}
+              onDelete={isAdmin ? () => setDeleteTarget({ id: project.id, title: project.title }) : undefined}
             />
           ))}
         </div>
       )}
 
-      {/* Modal */}
+      {/* Add Project Modal */}
       {showModal && <AddProjectModal onClose={() => setShowModal(false)} />}
+
+      {/* Delete Confirm Modal */}
+      {deleteTarget && (
+        <ConfirmModal
+          title="Delete this project?"
+          subtitle={deleteTarget.title}
+          confirmLabel="Delete"
+          onConfirm={() => { deleteProject(deleteTarget.id); setDeleteTarget(null) }}
+          onCancel={() => setDeleteTarget(null)}
+        />
+      )}
 
       {/* Toast */}
       {toast && <Toast message={toast} onDismiss={dismissToast} />}

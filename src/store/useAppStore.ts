@@ -10,6 +10,7 @@ interface AppState {
   registerUser: (name: string, role: 'player' | 'admin') => void
   logout: () => void
   addProject: (url: string, title: string, owner: string) => void
+  deleteProject: (projectId: string) => void
   toggleVote: (projectId: string) => string | void
   getVotesForUser: (userId: string) => string[]
 }
@@ -40,6 +41,18 @@ export const useAppStore = create<AppState>()(
           createdAt: new Date(),
         }
         set((state) => ({ projects: [...state.projects, project] }))
+      },
+
+      deleteProject: (projectId) => {
+        const { projects, votes } = get()
+        const updatedVotes: Record<string, string[]> = {}
+        for (const [userId, projectIds] of Object.entries(votes)) {
+          updatedVotes[userId] = projectIds.filter((id) => id !== projectId)
+        }
+        set({
+          projects: projects.filter((p) => p.id !== projectId),
+          votes: updatedVotes,
+        })
       },
 
       toggleVote: (projectId) => {
