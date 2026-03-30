@@ -2,10 +2,12 @@ import { useState, useCallback } from 'react'
 import { useAppStore } from '../store/useAppStore'
 import ProjectCard from '../components/ProjectCard'
 import Toast from '../components/Toast'
+import AddProjectModal from '../components/AddProjectModal'
 
 export default function DashboardPage() {
   const { currentUser, projects, toggleVote, getVotesForUser } = useAppStore()
   const [toast, setToast] = useState<string | null>(null)
+  const [showModal, setShowModal] = useState(false)
 
   const userVotes = currentUser ? getVotesForUser(currentUser.id) : []
 
@@ -18,6 +20,7 @@ export default function DashboardPage() {
       <div className="flex items-center justify-between mb-8">
         <h2 className="text-2xl font-bold text-white">Projects</h2>
         <button
+          onClick={() => setShowModal(true)}
           className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 text-white text-sm font-semibold shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:brightness-110 transition-all duration-200 cursor-pointer"
         >
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="stroke-current">
@@ -52,6 +55,9 @@ export default function DashboardPage() {
           ))}
         </div>
       )}
+
+      {/* Modal */}
+      {showModal && <AddProjectModal onClose={() => setShowModal(false)} />}
 
       {/* Toast */}
       {toast && <Toast message={toast} onDismiss={dismissToast} />}
