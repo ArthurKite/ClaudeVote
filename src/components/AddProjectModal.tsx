@@ -5,14 +5,19 @@ interface AddProjectModalProps {
   onClose: () => void
 }
 
+function normalizeUrl(u: string): string {
+  return u.trim().toLowerCase().replace(/\/+$/, '')
+}
+
 export default function AddProjectModal({ onClose }: AddProjectModalProps) {
-  const { currentUser, addProject } = useAppStore()
+  const { currentUser, projects, addProject } = useAppStore()
   const [url, setUrl] = useState('')
   const [title, setTitle] = useState('')
   const [owner, setOwner] = useState('')
   const [urlError, setUrlError] = useState('')
   const [visible, setVisible] = useState(false)
   const [selectOpen, setSelectOpen] = useState(false)
+  const [showDuplicateWarning, setShowDuplicateWarning] = useState(false)
   const selectRef = useRef<HTMLDivElement>(null)
 
   const ownerOptions = ['Alice', 'Bob', 'Charlie', 'Diana', currentUser?.name ?? 'You']
@@ -44,14 +49,25 @@ export default function AddProjectModal({ onClose }: AddProjectModalProps) {
 
   const isValidUrl = (v: string) => /^https?:\/\/.+/.test(v)
 
+  const doAdd = async () => {
+    await addProject(url.trim(), title.trim(), owner)
+    handleClose()
+  }
+
   const handleSubmit = async () => {
     if (!isValidUrl(url)) {
       setUrlError('URL must start with http:// or https://')
       return
     }
     if (!title.trim() || !owner) return
-    await addProject(url.trim(), title.trim(), owner)
-    handleClose()
+
+    const normalized = normalizeUrl(url)
+    const isDuplicate = projects.some((p) => normalizeUrl(p.url) === normalized)
+    if (isDuplicate && !showDuplicateWarning) {
+      setShowDuplicateWarning(true)
+      return
+    }
+    await doAdd()
   }
 
   const canSubmit = url.trim() && title.trim() && owner
@@ -141,28 +157,54 @@ export default function AddProjectModal({ onClose }: AddProjectModalProps) {
             </div>
           </div>
 
-          {/* Buttons */}
-          <div className="flex gap-3">
-            <button
-              type="button"
-              onClick={handleClose}
-              className="flex-1 rounded-xl border border-white/[0.08] py-3 text-sm font-medium text-white/50 hover:text-white/80 hover:border-white/15 transition-all cursor-pointer"
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              onClick={handleSubmit}
-              disabled={!canSubmit}
-              className={`flex-1 rounded-xl py-3 text-sm font-semibold transition-all ${
-                canSubmit
-                  ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:brightness-110 cursor-pointer'
-                  : 'bg-white/[0.05] text-white/20 cursor-not-allowed'
-              }`}
-            >
-              Add Project
-            </button>
-          </div>
+          {/* Duplicate warning or buttons */}
+          {showDuplicateWarning ? (
+            <div>
+              <div className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-3 mb-4">
+                <p className="text-sm text-amber-300">
+                  There is already another project with the same link, are you sure you want to continue?
+                </p>
+              </div>
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={handleClose}
+                  className="flex-1 rounded-xl border border-white/[0.08] py-3 text-sm font-medium text-white/50 hover:text-white/80 hover:border-white/15 transition-all cursor-pointer"
+                >
+                  No, cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={doAdd}
+                  className="flex-1 rounded-xl py-3 text-sm font-semibold bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:brightness-110 transition-all cursor-pointer"
+                >
+                  Yes, add anyway
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={handleClose}
+                className="flex-1 rounded-xl border border-white/[0.08] py-3 text-sm font-medium text-white/50 hover:text-white/80 hover:border-white/15 transition-all cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleSubmit}
+                disabled={!canSubmit}
+                className={`flex-1 rounded-xl py-3 text-sm font-semibold transition-all ${
+                  canSubmit
+                    ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:brightness-110 cursor-pointer'
+                    : 'bg-white/[0.05] text-white/20 cursor-not-allowed'
+                }`}
+              >
+                Add Project
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>
