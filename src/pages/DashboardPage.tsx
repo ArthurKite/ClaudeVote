@@ -4,12 +4,15 @@ import ProjectCard from '../components/ProjectCard'
 import Toast from '../components/Toast'
 import AddProjectModal from '../components/AddProjectModal'
 import ConfirmModal from '../components/ConfirmModal'
+import PreviewModal from '../components/PreviewModal'
+import type { Project } from '../types'
 
 export default function DashboardPage() {
   const { currentUser, projects, toggleVote, deleteProject, getVotesForUser } = useAppStore()
   const [toast, setToast] = useState<string | null>(null)
   const [showModal, setShowModal] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; title: string } | null>(null)
+  const [previewProject, setPreviewProject] = useState<Project | null>(null)
 
   const isAdmin = currentUser?.role === 'admin'
 
@@ -62,6 +65,7 @@ export default function DashboardPage() {
               }}
               onMaxVotes={() => showToast("You've used all 3 votes! Remove a vote to vote again.")}
               onDelete={isAdmin ? () => setDeleteTarget({ id: project.id, title: project.title }) : undefined}
+              onPreview={() => setPreviewProject(project)}
             />
           ))}
         </div>
@@ -79,6 +83,11 @@ export default function DashboardPage() {
           onConfirm={() => { deleteProject(deleteTarget.id); setDeleteTarget(null) }}
           onCancel={() => setDeleteTarget(null)}
         />
+      )}
+
+      {/* Preview Modal */}
+      {previewProject && (
+        <PreviewModal project={previewProject} onClose={() => setPreviewProject(null)} />
       )}
 
       {/* Toast */}
