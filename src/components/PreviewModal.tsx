@@ -43,6 +43,7 @@ export default function PreviewModal({ project, onClose }: PreviewModalProps) {
         className={`w-[90vw] h-[85vh] flex flex-col rounded-2xl border border-white/[0.08] bg-[#12121a] shadow-2xl transition-all duration-200 ${
           visible ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
         }`}
+        onClick={(e) => e.stopPropagation()}
       >
         {/* Top bar */}
         <div className="flex items-center justify-between px-5 py-3 border-b border-white/[0.06] shrink-0">
