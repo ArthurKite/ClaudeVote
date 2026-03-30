@@ -63,7 +63,7 @@ export const useAppStore = create<AppState>()((set, get) => ({
   },
 
   addProject: async (url, title, owner) => {
-    const thumbnailUrl = `https://api.microlink.io/?url=${encodeURIComponent(url)}&screenshot=true&meta=false&embed=screenshot.url`
+    const thumbnailUrl = `/api/screenshot?url=${encodeURIComponent(url)}`
     const docRef = await addDoc(collection(db, 'projects'), {
       url,
       title,
