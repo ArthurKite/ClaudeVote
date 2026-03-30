@@ -30,7 +30,7 @@ export default function PreviewModal({ project, onClose }: PreviewModalProps) {
 
   return (
     <div
-      className={`fixed inset-0 z-50 flex items-center justify-center p-4 transition-all duration-200 ${
+      className={`fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 transition-all duration-200 ${
         visible ? 'bg-black/70 backdrop-blur-sm' : 'bg-black/0'
       }`}
       onMouseDown={(e) => {
@@ -39,27 +39,27 @@ export default function PreviewModal({ project, onClose }: PreviewModalProps) {
     >
       {/* Modal card */}
       <div
-        className={`relative w-[90vw] h-[85vh] flex flex-col rounded-2xl border border-white/[0.08] bg-[#12121a] shadow-2xl transition-all duration-200 ${
+        className={`relative w-full sm:w-[90vw] h-[95vh] sm:h-[85vh] flex flex-col rounded-xl sm:rounded-2xl border border-white/[0.08] bg-[#12121a] shadow-2xl transition-all duration-200 ${
           visible ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
         }`}
         onMouseDown={(e) => e.stopPropagation()}
       >
         {/* Top bar */}
-        <div className="flex items-center justify-between px-5 py-3 border-b border-white/[0.06] shrink-0">
-          <h3 className="text-sm font-semibold text-white truncate max-w-[30%]">
+        <div className="flex items-center justify-between px-3 sm:px-5 py-2.5 sm:py-3 border-b border-white/[0.06] shrink-0 gap-2">
+          <h3 className="text-xs sm:text-sm font-semibold text-white truncate min-w-0">
             {project.title}
           </h3>
           <a
             href={project.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-xs text-white/30 hover:text-white/50 transition-colors truncate max-w-[40%]"
+            className="hidden sm:block text-xs text-white/30 hover:text-white/50 transition-colors truncate min-w-0"
           >
             {truncatedUrl}
           </a>
           <button
             onClick={handleClose}
-            className="w-8 h-8 rounded-full flex items-center justify-center text-white/50 hover:bg-white/10 hover:text-white transition-all cursor-pointer"
+            className="w-9 h-9 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-white/50 hover:bg-white/10 hover:text-white transition-all cursor-pointer shrink-0"
           >
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="stroke-current">
               <path d="M4 4l8 8M12 4l-8 8" strokeWidth="1.5" strokeLinecap="round" />

@@ -34,10 +34,10 @@ export default function StatsPage() {
 
   return (
     <div>
-      <h2 className="text-2xl font-bold text-white mb-8">Stats</h2>
+      <h2 className="text-xl sm:text-2xl font-bold text-white mb-6 sm:mb-8">Stats</h2>
 
       {/* Summary bar */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-6 sm:mb-10">
         <div className="rounded-xl border border-white/[0.06] bg-white/[0.03] p-5">
           <p className="text-xs font-medium text-white/40 uppercase tracking-wider mb-1">Total Projects</p>
           <p className="text-3xl font-bold text-white">{projects.length}</p>
@@ -58,11 +58,10 @@ export default function StatsPage() {
         </div>
       </div>
 
-      {/* Ranked table */}
-      <div className="rounded-xl border border-white/[0.06] bg-white/[0.03] overflow-x-auto">
-        <div className="min-w-[600px]">
-        {/* Header */}
-        <div className="grid grid-cols-[3rem_1fr_8rem_4rem_10rem] gap-4 px-5 py-3 border-b border-white/[0.06] text-xs font-medium text-white/30 uppercase tracking-wider">
+      {/* Ranked list — cards on mobile, table on md+ */}
+      <div className="rounded-xl border border-white/[0.06] bg-white/[0.03]">
+        {/* Desktop header — hidden on mobile */}
+        <div className="hidden md:grid grid-cols-[3rem_1fr_6rem_3.5rem_1fr] gap-4 px-5 py-3 border-b border-white/[0.06] text-xs font-medium text-white/30 uppercase tracking-wider">
           <span>#</span>
           <span>Project</span>
           <span>Owner</span>
@@ -78,45 +77,75 @@ export default function StatsPage() {
           return (
             <div
               key={project.id}
-              className={`grid grid-cols-[3rem_1fr_8rem_4rem_10rem] gap-4 px-5 py-4 items-center border-b border-white/[0.04] last:border-b-0 transition-colors ${
+              className={`border-b border-white/[0.04] last:border-b-0 transition-colors ${
                 isFirst ? 'bg-amber-500/[0.04]' : 'hover:bg-white/[0.02]'
               }`}
               style={{
                 animation: `statsRowIn 0.4s ease-out ${i * 0.06}s both`,
               }}
             >
-              <span
-                className={`text-sm font-semibold ${
-                  isFirst ? 'text-amber-400' : 'text-white/30'
-                }`}
-              >
-                {i + 1}
-              </span>
-              <span className={`text-sm font-medium truncate ${isFirst ? 'text-white' : 'text-white/80'}`}>
-                {project.title}
-              </span>
-              <span className="text-sm text-white/40 truncate">{project.owner}</span>
-              <span className={`text-sm font-semibold ${isFirst ? 'text-amber-400' : 'text-white/60'}`}>
-                {project.votes}
-              </span>
-              <div className="h-2 rounded-full bg-white/[0.06] overflow-hidden">
-                <div
-                  className={`h-full rounded-full transition-all duration-700 ${
-                    isFirst
-                      ? 'bg-gradient-to-r from-amber-500 to-amber-400'
-                      : 'bg-gradient-to-r from-indigo-500 to-purple-500'
-                  }`}
-                  style={{
-                    width: `${barWidth}%`,
-                    animation: `statsBarGrow 0.8s ease-out ${i * 0.06 + 0.2}s both`,
-                  }}
-                />
+              {/* Mobile layout */}
+              <div className="flex md:hidden flex-col gap-2 px-4 py-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className={`text-sm font-semibold shrink-0 ${isFirst ? 'text-amber-400' : 'text-white/30'}`}>
+                      #{i + 1}
+                    </span>
+                    <span className={`text-sm font-medium truncate ${isFirst ? 'text-white' : 'text-white/80'}`}>
+                      {project.title}
+                    </span>
+                  </div>
+                  <span className={`text-sm font-semibold shrink-0 ml-2 ${isFirst ? 'text-amber-400' : 'text-white/60'}`}>
+                    {project.votes} vote{project.votes !== 1 ? 's' : ''}
+                  </span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-xs text-white/40">{project.owner}</span>
+                  <div className="flex-1 h-1.5 rounded-full bg-white/[0.06] overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all duration-700 ${
+                        isFirst
+                          ? 'bg-gradient-to-r from-amber-500 to-amber-400'
+                          : 'bg-gradient-to-r from-indigo-500 to-purple-500'
+                      }`}
+                      style={{
+                        width: `${barWidth}%`,
+                        animation: `statsBarGrow 0.8s ease-out ${i * 0.06 + 0.2}s both`,
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Desktop layout */}
+              <div className="hidden md:grid grid-cols-[3rem_1fr_6rem_3.5rem_1fr] gap-4 px-5 py-4 items-center">
+                <span className={`text-sm font-semibold ${isFirst ? 'text-amber-400' : 'text-white/30'}`}>
+                  {i + 1}
+                </span>
+                <span className={`text-sm font-medium truncate ${isFirst ? 'text-white' : 'text-white/80'}`}>
+                  {project.title}
+                </span>
+                <span className="text-sm text-white/40 truncate">{project.owner}</span>
+                <span className={`text-sm font-semibold ${isFirst ? 'text-amber-400' : 'text-white/60'}`}>
+                  {project.votes}
+                </span>
+                <div className="h-2 rounded-full bg-white/[0.06] overflow-hidden">
+                  <div
+                    className={`h-full rounded-full transition-all duration-700 ${
+                      isFirst
+                        ? 'bg-gradient-to-r from-amber-500 to-amber-400'
+                        : 'bg-gradient-to-r from-indigo-500 to-purple-500'
+                    }`}
+                    style={{
+                      width: `${barWidth}%`,
+                      animation: `statsBarGrow 0.8s ease-out ${i * 0.06 + 0.2}s both`,
+                    }}
+                  />
+                </div>
               </div>
             </div>
           )
         })}
-      </div>
-
       </div>
       {/* Keyframe animations */}
       <style>{`

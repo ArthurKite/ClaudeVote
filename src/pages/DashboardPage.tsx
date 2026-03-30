@@ -24,16 +24,17 @@ export default function DashboardPage() {
   return (
     <div>
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
-        <h2 className="text-2xl font-bold text-white">Projects</h2>
+      <div className="flex items-center justify-between mb-5 sm:mb-8">
+        <h2 className="text-xl sm:text-2xl font-bold text-white">Projects</h2>
         <button
           onClick={() => setShowModal(true)}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 text-white text-sm font-semibold shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:brightness-110 transition-all duration-200 cursor-pointer"
+          className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 text-white text-xs sm:text-sm font-semibold shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:brightness-110 transition-all duration-200 cursor-pointer"
         >
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="stroke-current">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" className="stroke-current sm:w-4 sm:h-4">
             <path d="M8 3v10M3 8h10" strokeWidth="2" strokeLinecap="round" />
           </svg>
-          Add Project
+          <span className="hidden sm:inline">Add Project</span>
+          <span className="sm:hidden">Add</span>
         </button>
       </div>
 
@@ -50,7 +51,7 @@ export default function DashboardPage() {
           <p className="text-sm text-white/25 mt-1">Click Add Project to get started</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
           {projects.map((project) => (
             <ProjectCard
               key={project.id}

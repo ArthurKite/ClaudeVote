@@ -121,20 +121,20 @@ export default function RegisterPage() {
 
       <div className="relative z-10 w-full max-w-md px-4 sm:px-6">
         {/* Title */}
-        <h1 className="text-center text-5xl font-bold tracking-tight text-white mb-10">
+        <h1 className="text-center text-3xl sm:text-5xl font-bold tracking-tight text-white mb-6 sm:mb-10">
           <span className="bg-gradient-to-r from-indigo-400 via-purple-400 to-blue-400 bg-clip-text text-transparent drop-shadow-[0_0_30px_rgba(129,140,248,0.4)]">
             ClaudeVote
           </span>
         </h1>
 
         {/* Card */}
-        <div className="rounded-2xl border border-white/[0.06] bg-white/[0.03] backdrop-blur-xl p-8 shadow-2xl">
+        <div className="rounded-2xl border border-white/[0.06] bg-white/[0.03] backdrop-blur-xl p-5 sm:p-8 shadow-2xl">
           {/* Role selection */}
-          <div className="grid grid-cols-2 gap-4 mb-8">
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-6 sm:mb-8">
             <button
               type="button"
               onClick={() => { setRole('player'); setName(''); setPassword(''); setPasswordError(''); }}
-              className={`group relative rounded-xl border p-5 text-left transition-all duration-200 cursor-pointer ${
+              className={`group relative rounded-xl border p-3 sm:p-5 text-left transition-all duration-200 cursor-pointer ${
                 role === 'player'
                   ? 'border-indigo-400/50 bg-indigo-500/10 shadow-[0_0_20px_rgba(99,102,241,0.15)]'
                   : 'border-white/[0.08] bg-white/[0.02] hover:border-white/15 hover:bg-white/[0.04]'
@@ -150,7 +150,7 @@ export default function RegisterPage() {
             <button
               type="button"
               onClick={() => { setRole('admin'); setSelectedPlayer(''); }}
-              className={`group relative rounded-xl border p-5 text-left transition-all duration-200 cursor-pointer ${
+              className={`group relative rounded-xl border p-3 sm:p-5 text-left transition-all duration-200 cursor-pointer ${
                 role === 'admin'
                   ? 'border-purple-400/50 bg-purple-500/10 shadow-[0_0_20px_rgba(168,85,247,0.15)]'
                   : 'border-white/[0.08] bg-white/[0.02] hover:border-white/15 hover:bg-white/[0.04]'
