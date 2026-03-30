@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { useAppStore } from './store/useAppStore'
+import { useFirestoreSync } from './hooks/useFirestoreSync'
 import RegisterPage from './pages/RegisterPage'
 import DashboardPage from './pages/DashboardPage'
 import StatsPage from './pages/StatsPage'
@@ -19,6 +20,8 @@ function AdminRoute({ children }: { children: React.ReactNode }) {
 }
 
 function App() {
+  useFirestoreSync()
+
   return (
     <BrowserRouter>
       <Routes>

@@ -44,13 +44,13 @@ export default function AddProjectModal({ onClose }: AddProjectModalProps) {
 
   const isValidUrl = (v: string) => /^https?:\/\/.+/.test(v)
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!isValidUrl(url)) {
       setUrlError('URL must start with http:// or https://')
       return
     }
     if (!title.trim() || !owner) return
-    addProject(url.trim(), title.trim(), owner)
+    await addProject(url.trim(), title.trim(), owner)
     handleClose()
   }
 

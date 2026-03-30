@@ -4,7 +4,7 @@ import type { Project } from '../types'
 interface ProjectCardProps {
   project: Project
   hasVoted: boolean
-  onToggleVote: () => string | void
+  onToggleVote: () => Promise<string | void>
   onMaxVotes: () => void
   onDelete?: () => void
 }
@@ -14,8 +14,8 @@ export default function ProjectCard({ project, hasVoted, onToggleVote, onMaxVote
   const [bouncing, setBouncing] = useState(false)
   const bounceTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
-  const handleVote = () => {
-    const result = onToggleVote()
+  const handleVote = async () => {
+    const result = await onToggleVote()
     if (result === 'max_reached') {
       onMaxVotes()
       return
