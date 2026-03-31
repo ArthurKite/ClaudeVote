@@ -224,7 +224,7 @@ export default function RegisterPage() {
                     </svg>
                   </button>
                   {dropdownOpen && (
-                    <div className="absolute top-full left-0 right-0 mt-2 rounded-xl border border-white/[0.08] bg-[#1a1a26] shadow-xl overflow-hidden z-10">
+                    <div className="absolute top-full left-0 right-0 mt-2 rounded-xl border border-white/[0.08] bg-[#1a1a26] shadow-xl overflow-y-auto max-h-48 z-10">
                       {playerNames.map((pName) => {
                         const inUse = activeSessions.includes(pName)
                         return (
