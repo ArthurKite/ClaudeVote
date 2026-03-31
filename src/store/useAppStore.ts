@@ -51,6 +51,8 @@ export const useAppStore = create<AppState>()((set, get) => ({
   },
 
   logout: async () => {
+    // Flag voluntary logout so the session listener doesn't treat it as a kick
+    sessionStorage.setItem('claudevote-voluntary-logout', 'true')
     // Remove session doc if exists
     const sessionId = sessionStorage.getItem('claudevote-session-id')
     if (sessionId) {

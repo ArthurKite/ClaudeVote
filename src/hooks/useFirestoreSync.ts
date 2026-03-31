@@ -73,6 +73,11 @@ export function useFirestoreSync() {
           initialLoad = false
           return
         }
+        // If this was a voluntary logout, don't treat as kick
+        if (sessionStorage.getItem('claudevote-voluntary-logout')) {
+          sessionStorage.removeItem('claudevote-voluntary-logout')
+          return
+        }
         sessionStorage.setItem('claudevote-kicked', 'true')
         logoutRef.current()
         window.location.href = '/'
