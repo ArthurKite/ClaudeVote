@@ -39,8 +39,8 @@ export default function Layout() {
   const location = useLocation()
   const [showPlayerModal, setShowPlayerModal] = useState(false)
 
-  const handleLogout = () => {
-    logout()
+  const handleLogout = async () => {
+    await logout()
     navigate('/')
   }
 
