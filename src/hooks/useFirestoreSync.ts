@@ -63,7 +63,7 @@ export function useFirestoreSync() {
   // Subscribe to current user's session doc for name changes + kick detection
   useEffect(() => {
     const sessionId = sessionStorage.getItem('claudevote-session-id')
-    if (!sessionId || !currentUser || currentUser.role !== 'player') return
+    if (!sessionId || !currentUser) return
 
     let initialLoad = true
 
@@ -87,5 +87,5 @@ export function useFirestoreSync() {
     })
 
     return unsubSession
-  }, [currentUser?.id, currentUser?.role])
+  }, [currentUser?.id])
 }

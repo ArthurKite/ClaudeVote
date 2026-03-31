@@ -97,6 +97,15 @@ export default function RegisterPage() {
         return
       }
       const adminRole = name.trim().toLowerCase() === 'arthur' ? 'superadmin' as const : 'admin' as const
+      // Write session doc for admin too
+      const adminUserId = crypto.randomUUID()
+      await setDoc(doc(db, 'sessions', adminUserId), {
+        userId: adminUserId,
+        playerName: name.trim(),
+        role: adminRole,
+        lastSeen: Timestamp.now(),
+      })
+      sessionStorage.setItem('claudevote-session-id', adminUserId)
       registerUser(name.trim(), adminRole)
     } else if (role === 'player') {
       if (!selectedPlayer) return
@@ -105,6 +114,7 @@ export default function RegisterPage() {
       await setDoc(doc(db, 'sessions', userId), {
         userId,
         playerName: selectedPlayer,
+        role: 'player',
         lastSeen: Timestamp.now(),
       })
       // Store session ID for cleanup on logout
