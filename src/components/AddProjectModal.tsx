@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { useAppStore } from '../store/useAppStore'
 
 interface AddProjectModalProps {
@@ -72,7 +73,7 @@ export default function AddProjectModal({ onClose }: AddProjectModalProps) {
 
   const canSubmit = url.trim() && title.trim() && owner
 
-  return (
+  return createPortal(
     <div
       className={`fixed inset-0 z-50 flex items-center justify-center p-4 transition-all duration-200 ${
         visible ? 'bg-black/60 backdrop-blur-sm' : 'bg-black/0'
@@ -207,6 +208,7 @@ export default function AddProjectModal({ onClose }: AddProjectModalProps) {
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import type { Project } from '../types'
 
 interface PreviewModalProps {
@@ -28,7 +29,7 @@ export default function PreviewModal({ project, onClose }: PreviewModalProps) {
   // Use Microlink to get a high-res screenshot preview
   const screenshotUrl = `https://api.microlink.io/?url=${encodeURIComponent(project.url)}&screenshot=true&meta=false&embed=screenshot.url&screenshot.width=1280&screenshot.height=800`
 
-  return (
+  return createPortal(
     <div
       className={`fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 transition-all duration-200 ${
         visible ? 'bg-black/70 backdrop-blur-sm' : 'bg-black/0'
@@ -121,6 +122,7 @@ export default function PreviewModal({ project, onClose }: PreviewModalProps) {
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
