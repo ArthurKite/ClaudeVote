@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import {
   collection,
   doc,
@@ -14,10 +14,18 @@ export function useFirestoreSync() {
   const _setProjects = useAppStore((s) => s._setProjects)
   const _setVotes = useAppStore((s) => s._setVotes)
   const updateCurrentUserName = useAppStore((s) => s.updateCurrentUserName)
+  const logout = useAppStore((s) => s.logout)
   const currentUser = useAppStore((s) => s.currentUser)
 
+  // Use refs to avoid stale closures in the snapshot listener
+  const currentUserRef = useRef(currentUser)
+  currentUserRef.current = currentUser
+  const logoutRef = useRef(logout)
+  logoutRef.current = logout
+  const updateNameRef = useRef(updateCurrentUserName)
+  updateNameRef.current = updateCurrentUserName
+
   useEffect(() => {
-    // Subscribe to projects collection
     const projectsQuery = query(
       collection(db, 'projects'),
       orderBy('createdAt', 'desc')
@@ -38,7 +46,6 @@ export function useFirestoreSync() {
       _setProjects(projects)
     })
 
-    // Subscribe to votes collection
     const unsubVotes = onSnapshot(collection(db, 'votes'), (snapshot) => {
       const votes: Record<string, string[]> = {}
       snapshot.docs.forEach((d) => {
@@ -53,20 +60,32 @@ export function useFirestoreSync() {
     }
   }, [_setProjects, _setVotes])
 
-  // Subscribe to current user's session doc for name changes
+  // Subscribe to current user's session doc for name changes + kick detection
   useEffect(() => {
     const sessionId = sessionStorage.getItem('claudevote-session-id')
-    if (!sessionId || !currentUser) return
+    if (!sessionId || !currentUser || currentUser.role !== 'player') return
+
+    let initialLoad = true
 
     const unsubSession = onSnapshot(doc(db, 'sessions', sessionId), (snap) => {
-      if (!snap.exists()) return
+      if (!snap.exists()) {
+        if (initialLoad) {
+          initialLoad = false
+          return
+        }
+        sessionStorage.setItem('claudevote-kicked', 'true')
+        logoutRef.current()
+        window.location.href = '/'
+        return
+      }
+      initialLoad = false
       const data = snap.data()
       const serverName = data.playerName as string | undefined
-      if (serverName && serverName !== currentUser.name) {
-        updateCurrentUserName(serverName)
+      if (serverName && serverName !== currentUserRef.current?.name) {
+        updateNameRef.current(serverName)
       }
     })
 
     return unsubSession
-  }, [currentUser?.id, updateCurrentUserName])
+  }, [currentUser?.id, currentUser?.role])
 }

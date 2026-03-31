@@ -6,10 +6,14 @@ import {
   onSnapshot,
   collection,
   updateDoc,
+  deleteDoc,
   getDocs,
+  getDoc,
   query,
   where,
+  runTransaction,
 } from 'firebase/firestore'
+import { useAppStore } from '../store/useAppStore'
 
 interface SessionData {
   playerName: string
@@ -33,7 +37,10 @@ export default function PlayerManagementModal({ onClose }: PlayerManagementModal
   const [editValue, setEditValue] = useState('')
   const [editError, setEditError] = useState('')
   const [saving, setSaving] = useState(false)
+  const [deletingName, setDeletingName] = useState<string | null>(null)
+  const [deleting, setDeleting] = useState(false)
   const editInputRef = useRef<HTMLInputElement>(null)
+  const currentUser = useAppStore((s) => s.currentUser)
 
   useEffect(() => {
     requestAnimationFrame(() => setVisible(true))
@@ -106,6 +113,7 @@ export default function PlayerManagementModal({ onClose }: PlayerManagementModal
     setEditingName(name)
     setEditValue(name)
     setEditError('')
+    setDeletingName(null)
   }
 
   const cancelEditing = () => {
@@ -122,7 +130,6 @@ export default function PlayerManagementModal({ onClose }: PlayerManagementModal
       return
     }
 
-    // Check duplicate (case-insensitive, excluding current name)
     if (
       playerNames.some(
         (n) => n.toLowerCase() === trimmed.toLowerCase() && n !== editingName
@@ -132,7 +139,6 @@ export default function PlayerManagementModal({ onClose }: PlayerManagementModal
       return
     }
 
-    // No change
     if (trimmed === editingName) {
       cancelEditing()
       return
@@ -142,11 +148,9 @@ export default function PlayerManagementModal({ onClose }: PlayerManagementModal
     try {
       const oldName = editingName
 
-      // 1. Update config/players doc
       const newNames = playerNames.map((n) => (n === oldName ? trimmed : n))
       await updateDoc(doc(db, 'config', 'players'), { names: newNames })
 
-      // 2. Update all projects where owner === oldName
       const projectsSnap = await getDocs(
         query(collection(db, 'projects'), where('owner', '==', oldName))
       )
@@ -154,7 +158,6 @@ export default function PlayerManagementModal({ onClose }: PlayerManagementModal
         await updateDoc(doc(db, 'projects', projDoc.id), { owner: trimmed })
       }
 
-      // 3. Update active session where playerName === oldName
       const sessionsSnap = await getDocs(
         query(collection(db, 'sessions'), where('playerName', '==', oldName))
       )
@@ -170,7 +173,61 @@ export default function PlayerManagementModal({ onClose }: PlayerManagementModal
     }
   }
 
+  const handleDeletePlayer = async (name: string) => {
+    setDeleting(true)
+    try {
+      // 1. Remove from config/players
+      const newNames = playerNames.filter((n) => n !== name)
+      await updateDoc(doc(db, 'config', 'players'), { names: newNames })
+
+      // 2. Update projects where owner === name → "Deleted player"
+      const projectsSnap = await getDocs(
+        query(collection(db, 'projects'), where('owner', '==', name))
+      )
+      for (const projDoc of projectsSnap.docs) {
+        await updateDoc(doc(db, 'projects', projDoc.id), { owner: 'Deleted player' })
+      }
+
+      // 3. Find sessions for this player, remove their votes
+      const sessionsSnap = await getDocs(
+        query(collection(db, 'sessions'), where('playerName', '==', name))
+      )
+      for (const sessDoc of sessionsSnap.docs) {
+        const sessionUserId = sessDoc.id
+        // Get this user's votes
+        const voteDocRef = doc(db, 'votes', sessionUserId)
+        const voteSnap = await getDoc(voteDocRef)
+        if (voteSnap.exists()) {
+          const votedProjectIds: string[] = voteSnap.data().projectIds ?? []
+          // Decrement each project's vote count
+          for (const projectId of votedProjectIds) {
+            const projectRef = doc(db, 'projects', projectId)
+            await runTransaction(db, async (transaction) => {
+              const projSnap = await transaction.get(projectRef)
+              if (projSnap.exists()) {
+                const currentVotes = projSnap.data().votes ?? 0
+                transaction.update(projectRef, { votes: Math.max(0, currentVotes - 1) })
+              }
+            })
+          }
+          // Delete the votes doc
+          await deleteDoc(voteDocRef)
+        }
+
+        // 4. Delete the session doc (triggers kick)
+        await deleteDoc(doc(db, 'sessions', sessionUserId))
+      }
+
+      setDeletingName(null)
+    } catch {
+      // Best effort
+    } finally {
+      setDeleting(false)
+    }
+  }
+
   const atLimit = playerNames.length >= MAX_PLAYERS
+  const isCurrentUser = (name: string) => currentUser?.name === name
 
   return createPortal(
     <div
@@ -243,6 +300,7 @@ export default function PlayerManagementModal({ onClose }: PlayerManagementModal
                 {playerNames.map((name) => {
                   const isLive = livePlayers.has(name)
                   const isEditing = editingName === name
+                  const isDeleting = deletingName === name
 
                   if (isEditing) {
                     return (
@@ -271,7 +329,6 @@ export default function PlayerManagementModal({ onClose }: PlayerManagementModal
                             disabled={saving}
                             className="flex-1 bg-white/[0.06] border border-indigo-500/40 rounded px-2 py-1 text-sm text-white outline-none focus:border-indigo-500/70 transition-colors"
                           />
-                          {/* Save button */}
                           <button
                             onClick={handleSaveRename}
                             disabled={saving}
@@ -280,7 +337,6 @@ export default function PlayerManagementModal({ onClose }: PlayerManagementModal
                           >
                             ✓
                           </button>
-                          {/* Cancel button */}
                           <button
                             onClick={cancelEditing}
                             disabled={saving}
@@ -293,6 +349,35 @@ export default function PlayerManagementModal({ onClose }: PlayerManagementModal
                         {editError && (
                           <p className="text-red-400 text-xs mt-1.5 ml-5">{editError}</p>
                         )}
+                      </div>
+                    )
+                  }
+
+                  if (isDeleting) {
+                    return (
+                      <div
+                        key={name}
+                        className="flex items-center justify-between px-3 py-2.5 rounded-lg bg-red-500/[0.06] border-b border-white/[0.04] last:border-0"
+                      >
+                        <span className="text-sm text-red-300">
+                          Delete <strong>{name}</strong>?
+                        </span>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => handleDeletePlayer(name)}
+                            disabled={deleting}
+                            className="px-3 py-1 rounded-md text-xs font-medium bg-red-500/20 text-red-300 hover:bg-red-500/30 transition-all cursor-pointer disabled:opacity-30"
+                          >
+                            {deleting ? 'Deleting...' : 'Yes'}
+                          </button>
+                          <button
+                            onClick={() => setDeletingName(null)}
+                            disabled={deleting}
+                            className="px-3 py-1 rounded-md text-xs font-medium text-white/40 hover:text-white/70 hover:bg-white/[0.06] transition-all cursor-pointer disabled:opacity-30"
+                          >
+                            No
+                          </button>
+                        </div>
                       </div>
                     )
                   }
@@ -314,7 +399,6 @@ export default function PlayerManagementModal({ onClose }: PlayerManagementModal
                         )}
                       </div>
                       <div className="flex items-center gap-1">
-                        {/* Edit button */}
                         <button
                           onClick={() => startEditing(name)}
                           className="w-7 h-7 flex items-center justify-center rounded-md text-white/30 hover:text-white/70 hover:bg-white/[0.06] transition-all cursor-pointer"
@@ -325,17 +409,20 @@ export default function PlayerManagementModal({ onClose }: PlayerManagementModal
                             <path d="m15 5 4 4" />
                           </svg>
                         </button>
-                        {/* Delete button */}
-                        <button
-                          className="w-7 h-7 flex items-center justify-center rounded-md text-white/30 hover:text-red-400 hover:bg-red-500/10 transition-all cursor-pointer"
-                          title="Delete"
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M3 6h18" />
-                            <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
-                            <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
-                          </svg>
-                        </button>
+                        {/* Hide delete for current user (safety check) */}
+                        {!isCurrentUser(name) && (
+                          <button
+                            onClick={() => { setDeletingName(name); setEditingName(null) }}
+                            className="w-7 h-7 flex items-center justify-center rounded-md text-white/30 hover:text-red-400 hover:bg-red-500/10 transition-all cursor-pointer"
+                            title="Delete"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M3 6h18" />
+                              <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                              <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                            </svg>
+                          </button>
+                        )}
                       </div>
                     </div>
                   )

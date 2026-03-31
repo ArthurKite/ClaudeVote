@@ -25,9 +25,19 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(true)
   const [selectedPlayer, setSelectedPlayer] = useState('')
   const [dropdownOpen, setDropdownOpen] = useState(false)
+  const [kickedBanner, setKickedBanner] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const navigate = useNavigate()
   const { currentUser, registerUser } = useAppStore()
+
+  // Check if player was kicked
+  useEffect(() => {
+    const kicked = sessionStorage.getItem('claudevote-kicked')
+    if (kicked) {
+      setKickedBanner(true)
+      sessionStorage.removeItem('claudevote-kicked')
+    }
+  }, [])
 
   useEffect(() => {
     if (currentUser) navigate('/dashboard', { replace: true })
@@ -129,6 +139,20 @@ export default function RegisterPage() {
 
         {/* Card */}
         <div className="rounded-2xl border border-white/[0.06] bg-white/[0.03] backdrop-blur-xl p-5 sm:p-8 shadow-2xl">
+          {/* Kicked banner */}
+          {kickedBanner && (
+            <div className="mb-5 rounded-lg bg-red-500/10 border border-red-500/20 px-4 py-3 flex items-center gap-3">
+              <span className="text-red-400 text-sm">⚠️</span>
+              <span className="text-sm text-red-300">You have been removed by an admin.</span>
+              <button
+                onClick={() => setKickedBanner(false)}
+                className="ml-auto text-red-400/50 hover:text-red-400 transition-colors cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+          )}
+
           {/* Role selection */}
           <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-6 sm:mb-8">
             <button
