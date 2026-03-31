@@ -1,7 +1,7 @@
 export type User = {
   id: string
   name: string
-  role: 'player' | 'admin'
+  role: 'player' | 'admin' | 'superadmin'
 }
 
 export type Project = {

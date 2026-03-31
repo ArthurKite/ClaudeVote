@@ -46,7 +46,7 @@ export default function Layout() {
 
   if (!currentUser) return null
 
-  const isAdmin = currentUser.role === 'admin'
+  const isAdmin = currentUser.role === 'admin' || currentUser.role === 'superadmin'
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-white">
@@ -99,7 +99,7 @@ export default function Layout() {
                     : 'bg-indigo-500/20 text-indigo-300'
                 }`}
               >
-                {currentUser.role}
+                {currentUser.role === 'superadmin' ? 'SUPER' : currentUser.role}
               </span>
             </div>
             {isAdmin && (

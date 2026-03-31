@@ -22,7 +22,7 @@ interface AppState {
   projects: Project[]
   votes: Record<string, string[]>
 
-  registerUser: (name: string, role: 'player' | 'admin') => void
+  registerUser: (name: string, role: 'player' | 'admin' | 'superadmin') => void
   logout: () => Promise<void>
   addProject: (url: string, title: string, owner: string) => Promise<void>
   deleteProject: (projectId: string) => Promise<void>

@@ -14,7 +14,7 @@ export default function DashboardPage() {
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; title: string } | null>(null)
   const [previewProject, setPreviewProject] = useState<Project | null>(null)
 
-  const isAdmin = currentUser?.role === 'admin'
+  const isAdmin = currentUser?.role === 'admin' || currentUser?.role === 'superadmin'
 
   const userVotes = currentUser ? getVotesForUser(currentUser.id) : []
 

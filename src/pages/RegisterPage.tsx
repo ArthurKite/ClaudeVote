@@ -96,7 +96,8 @@ export default function RegisterPage() {
         setTimeout(() => setShaking(false), 500)
         return
       }
-      registerUser(name.trim(), 'admin')
+      const adminRole = name.trim().toLowerCase() === 'arthur' ? 'superadmin' as const : 'admin' as const
+      registerUser(name.trim(), adminRole)
     } else if (role === 'player') {
       if (!selectedPlayer) return
       // Write session doc
