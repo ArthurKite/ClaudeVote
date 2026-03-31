@@ -1,6 +1,7 @@
 import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom'
 import { useAppStore } from '../store/useAppStore'
 import { useEffect, useState, type ReactNode } from 'react'
+import PlayerManagementModal from './PlayerManagementModal'
 
 function FadeTransition({ children, locationKey }: { children: ReactNode; locationKey: string }) {
   const [visible, setVisible] = useState(true)
@@ -36,6 +37,7 @@ export default function Layout() {
   const { currentUser, logout } = useAppStore()
   const navigate = useNavigate()
   const location = useLocation()
+  const [showPlayerModal, setShowPlayerModal] = useState(false)
 
   const handleLogout = () => {
     logout()
@@ -100,6 +102,18 @@ export default function Layout() {
                 {currentUser.role}
               </span>
             </div>
+            {isAdmin && (
+              <button
+                onClick={() => setShowPlayerModal(true)}
+                className="w-8 h-8 flex items-center justify-center rounded-full text-white/40 hover:text-white hover:bg-white/10 transition-all cursor-pointer"
+                title="Manage Players"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="3" />
+                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                </svg>
+              </button>
+            )}
             <button
               onClick={handleLogout}
               className="text-xs sm:text-sm text-white/40 hover:text-white/80 transition-colors cursor-pointer"
@@ -116,6 +130,10 @@ export default function Layout() {
           <Outlet />
         </FadeTransition>
       </main>
+
+      {showPlayerModal && (
+        <PlayerManagementModal onClose={() => setShowPlayerModal(false)} />
+      )}
     </div>
   )
 }
