@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import {
   collection,
+  doc,
   query,
   orderBy,
   onSnapshot,
@@ -12,6 +13,8 @@ import type { Project } from '../types'
 export function useFirestoreSync() {
   const _setProjects = useAppStore((s) => s._setProjects)
   const _setVotes = useAppStore((s) => s._setVotes)
+  const updateCurrentUserName = useAppStore((s) => s.updateCurrentUserName)
+  const currentUser = useAppStore((s) => s.currentUser)
 
   useEffect(() => {
     // Subscribe to projects collection
@@ -20,10 +23,10 @@ export function useFirestoreSync() {
       orderBy('createdAt', 'desc')
     )
     const unsubProjects = onSnapshot(projectsQuery, (snapshot) => {
-      const projects: Project[] = snapshot.docs.map((doc) => {
-        const data = doc.data()
+      const projects: Project[] = snapshot.docs.map((d) => {
+        const data = d.data()
         return {
-          id: doc.id,
+          id: d.id,
           url: data.url,
           title: data.title,
           owner: data.owner,
@@ -38,8 +41,8 @@ export function useFirestoreSync() {
     // Subscribe to votes collection
     const unsubVotes = onSnapshot(collection(db, 'votes'), (snapshot) => {
       const votes: Record<string, string[]> = {}
-      snapshot.docs.forEach((doc) => {
-        votes[doc.id] = doc.data().projectIds ?? []
+      snapshot.docs.forEach((d) => {
+        votes[d.id] = d.data().projectIds ?? []
       })
       _setVotes(votes)
     })
@@ -49,4 +52,21 @@ export function useFirestoreSync() {
       unsubVotes()
     }
   }, [_setProjects, _setVotes])
+
+  // Subscribe to current user's session doc for name changes
+  useEffect(() => {
+    const sessionId = sessionStorage.getItem('claudevote-session-id')
+    if (!sessionId || !currentUser) return
+
+    const unsubSession = onSnapshot(doc(db, 'sessions', sessionId), (snap) => {
+      if (!snap.exists()) return
+      const data = snap.data()
+      const serverName = data.playerName as string | undefined
+      if (serverName && serverName !== currentUser.name) {
+        updateCurrentUserName(serverName)
+      }
+    })
+
+    return unsubSession
+  }, [currentUser?.id, updateCurrentUserName])
 }

@@ -29,6 +29,8 @@ interface AppState {
   toggleVote: (projectId: string) => Promise<string | void>
   getVotesForUser: (userId: string) => string[]
 
+  updateCurrentUserName: (newName: string) => void
+
   // Internal setters for real-time sync
   _setProjects: (projects: Project[]) => void
   _setVotes: (votes: Record<string, string[]>) => void
@@ -136,6 +138,14 @@ export const useAppStore = create<AppState>()((set, get) => ({
 
   getVotesForUser: (userId) => {
     return get().votes[userId] ?? []
+  },
+
+  updateCurrentUserName: (newName) => {
+    const { currentUser } = get()
+    if (!currentUser) return
+    const updated = { ...currentUser, name: newName }
+    sessionStorage.setItem('claudevote-user', JSON.stringify(updated))
+    set({ currentUser: updated })
   },
 
   _setProjects: (projects) => set({ projects }),

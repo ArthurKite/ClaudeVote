@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { db } from '../lib/firebase'
 import {
@@ -6,6 +6,9 @@ import {
   onSnapshot,
   collection,
   updateDoc,
+  getDocs,
+  query,
+  where,
 } from 'firebase/firestore'
 
 interface SessionData {
@@ -26,6 +29,11 @@ export default function PlayerManagementModal({ onClose }: PlayerManagementModal
   const [newName, setNewName] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(true)
+  const [editingName, setEditingName] = useState<string | null>(null)
+  const [editValue, setEditValue] = useState('')
+  const [editError, setEditError] = useState('')
+  const [saving, setSaving] = useState(false)
+  const editInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     requestAnimationFrame(() => setVisible(true))
@@ -59,6 +67,14 @@ export default function PlayerManagementModal({ onClose }: PlayerManagementModal
     return unsub
   }, [])
 
+  // Auto-focus edit input
+  useEffect(() => {
+    if (editingName !== null) {
+      editInputRef.current?.focus()
+      editInputRef.current?.select()
+    }
+  }, [editingName])
+
   const handleClose = () => {
     setVisible(false)
     setTimeout(onClose, 200)
@@ -83,6 +99,74 @@ export default function PlayerManagementModal({ onClose }: PlayerManagementModal
       setError('')
     } catch {
       setError('Failed to add player')
+    }
+  }
+
+  const startEditing = (name: string) => {
+    setEditingName(name)
+    setEditValue(name)
+    setEditError('')
+  }
+
+  const cancelEditing = () => {
+    setEditingName(null)
+    setEditValue('')
+    setEditError('')
+  }
+
+  const handleSaveRename = async () => {
+    if (!editingName) return
+    const trimmed = editValue.trim()
+    if (!trimmed) {
+      setEditError('Name cannot be empty')
+      return
+    }
+
+    // Check duplicate (case-insensitive, excluding current name)
+    if (
+      playerNames.some(
+        (n) => n.toLowerCase() === trimmed.toLowerCase() && n !== editingName
+      )
+    ) {
+      setEditError('A player with this name already exists')
+      return
+    }
+
+    // No change
+    if (trimmed === editingName) {
+      cancelEditing()
+      return
+    }
+
+    setSaving(true)
+    try {
+      const oldName = editingName
+
+      // 1. Update config/players doc
+      const newNames = playerNames.map((n) => (n === oldName ? trimmed : n))
+      await updateDoc(doc(db, 'config', 'players'), { names: newNames })
+
+      // 2. Update all projects where owner === oldName
+      const projectsSnap = await getDocs(
+        query(collection(db, 'projects'), where('owner', '==', oldName))
+      )
+      for (const projDoc of projectsSnap.docs) {
+        await updateDoc(doc(db, 'projects', projDoc.id), { owner: trimmed })
+      }
+
+      // 3. Update active session where playerName === oldName
+      const sessionsSnap = await getDocs(
+        query(collection(db, 'sessions'), where('playerName', '==', oldName))
+      )
+      for (const sessDoc of sessionsSnap.docs) {
+        await updateDoc(doc(db, 'sessions', sessDoc.id), { playerName: trimmed })
+      }
+
+      cancelEditing()
+    } catch {
+      setEditError('Failed to rename player')
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -158,6 +242,61 @@ export default function PlayerManagementModal({ onClose }: PlayerManagementModal
               <div className="space-y-0">
                 {playerNames.map((name) => {
                   const isLive = livePlayers.has(name)
+                  const isEditing = editingName === name
+
+                  if (isEditing) {
+                    return (
+                      <div
+                        key={name}
+                        className="flex flex-col px-3 py-2.5 rounded-lg bg-white/[0.03] border-b border-white/[0.04] last:border-0"
+                      >
+                        <div className="flex items-center gap-2">
+                          <div
+                            className={`w-2 h-2 rounded-full shrink-0 ${
+                              isLive ? 'bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.5)]' : 'bg-white/20'
+                            }`}
+                          />
+                          <input
+                            ref={editInputRef}
+                            type="text"
+                            value={editValue}
+                            onChange={(e) => {
+                              setEditValue(e.target.value)
+                              setEditError('')
+                            }}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') handleSaveRename()
+                              if (e.key === 'Escape') cancelEditing()
+                            }}
+                            disabled={saving}
+                            className="flex-1 bg-white/[0.06] border border-indigo-500/40 rounded px-2 py-1 text-sm text-white outline-none focus:border-indigo-500/70 transition-colors"
+                          />
+                          {/* Save button */}
+                          <button
+                            onClick={handleSaveRename}
+                            disabled={saving}
+                            className="w-7 h-7 flex items-center justify-center rounded-md text-emerald-400 hover:bg-emerald-500/10 transition-all cursor-pointer disabled:opacity-30"
+                            title="Save"
+                          >
+                            ✓
+                          </button>
+                          {/* Cancel button */}
+                          <button
+                            onClick={cancelEditing}
+                            disabled={saving}
+                            className="w-7 h-7 flex items-center justify-center rounded-md text-white/40 hover:text-white/70 hover:bg-white/[0.06] transition-all cursor-pointer disabled:opacity-30"
+                            title="Cancel"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                        {editError && (
+                          <p className="text-red-400 text-xs mt-1.5 ml-5">{editError}</p>
+                        )}
+                      </div>
+                    )
+                  }
+
                   return (
                     <div
                       key={name}
@@ -177,6 +316,7 @@ export default function PlayerManagementModal({ onClose }: PlayerManagementModal
                       <div className="flex items-center gap-1">
                         {/* Edit button */}
                         <button
+                          onClick={() => startEditing(name)}
                           className="w-7 h-7 flex items-center justify-center rounded-md text-white/30 hover:text-white/70 hover:bg-white/[0.06] transition-all cursor-pointer"
                           title="Rename"
                         >
