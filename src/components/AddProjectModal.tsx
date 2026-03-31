@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { useAppStore } from '../store/useAppStore'
+import { db } from '../lib/firebase'
+import { doc, onSnapshot } from 'firebase/firestore'
 
 interface AddProjectModalProps {
   onClose: () => void
@@ -21,13 +23,29 @@ export default function AddProjectModal({ onClose }: AddProjectModalProps) {
   const [showDuplicateWarning, setShowDuplicateWarning] = useState(false)
   const selectRef = useRef<HTMLDivElement>(null)
 
-  const ownerOptions = ['Alice', 'Bob', 'Charlie', 'Diana', currentUser?.name ?? 'You']
-  // Deduplicate if currentUser.name matches one of the hardcoded names
-  const uniqueOwners = [...new Set(ownerOptions)]
+  const [playerNames, setPlayerNames] = useState<string[]>([])
 
   useEffect(() => {
     requestAnimationFrame(() => setVisible(true))
   }, [])
+
+  // Fetch player list from Firestore in real-time
+  useEffect(() => {
+    const unsub = onSnapshot(doc(db, 'config', 'players'), (snap) => {
+      if (snap.exists()) {
+        setPlayerNames(snap.data().names ?? [])
+      }
+    })
+    return unsub
+  }, [])
+
+  // Build owner options: all players + current user (if not already in the list)
+  const ownerOptions = [...playerNames]
+  const currentName = currentUser?.name ?? ''
+  if (currentName && !ownerOptions.some((n) => n.toLowerCase() === currentName.toLowerCase())) {
+    ownerOptions.push(currentName)
+  }
+  const uniqueOwners = ownerOptions
 
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
