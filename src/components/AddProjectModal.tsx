@@ -155,7 +155,7 @@ export default function AddProjectModal({ onClose }: AddProjectModalProps) {
               </button>
 
               {selectOpen && (
-                <div className="absolute top-full left-0 right-0 mt-1 rounded-xl border border-white/[0.08] bg-[#1a1a26] shadow-xl overflow-hidden z-[100]">
+                <div className="absolute top-full left-0 right-0 mt-1 rounded-xl border border-white/[0.08] bg-[#1a1a26] shadow-xl overflow-y-auto max-h-48 z-[100]">
                   {uniqueOwners.map((name) => (
                     <button
                       key={name}
