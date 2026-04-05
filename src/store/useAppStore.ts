@@ -9,6 +9,7 @@ import {
   runTransaction,
   arrayUnion,
   arrayRemove,
+  deleteField,
   Timestamp,
 } from 'firebase/firestore'
 import { db } from '../lib/firebase'
@@ -25,6 +26,7 @@ interface AppState {
   registerUser: (name: string, role: 'player' | 'admin' | 'superadmin') => void
   logout: () => Promise<void>
   addProject: (url: string, title: string, owner: string, demoUrl?: string) => Promise<void>
+  editProject: (projectId: string, data: { url?: string; title?: string; owner?: string; demoUrl?: string | null }) => Promise<void>
   deleteProject: (projectId: string) => Promise<void>
   toggleVote: (projectId: string) => Promise<string | void>
   getVotesForUser: (userId: string) => string[]
@@ -83,6 +85,24 @@ export const useAppStore = create<AppState>()((set, get) => ({
     const docRef = await addDoc(collection(db, 'projects'), projectData)
     // Update the doc to store its own ID
     await updateDoc(docRef, { id: docRef.id })
+  },
+
+  editProject: async (projectId, data) => {
+    const updates: Record<string, unknown> = {}
+    if (data.title !== undefined) updates.title = data.title
+    if (data.owner !== undefined) updates.owner = data.owner
+    if (data.url !== undefined) {
+      updates.url = data.url
+      updates.thumbnailUrl = `/api/screenshot?url=${encodeURIComponent(data.url)}`
+    }
+    if (data.demoUrl === null) {
+      updates.demoUrl = deleteField()
+    } else if (data.demoUrl !== undefined) {
+      updates.demoUrl = data.demoUrl
+    }
+    if (Object.keys(updates).length > 0) {
+      await updateDoc(doc(db, 'projects', projectId), updates)
+    }
   },
 
   deleteProject: async (projectId) => {

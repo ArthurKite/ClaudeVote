@@ -5,6 +5,7 @@ import Toast from '../components/Toast'
 import AddProjectModal from '../components/AddProjectModal'
 import ConfirmModal from '../components/ConfirmModal'
 import PreviewModal from '../components/PreviewModal'
+import EditProjectModal from '../components/EditProjectModal'
 import type { Project } from '../types'
 
 export default function DashboardPage() {
@@ -13,8 +14,10 @@ export default function DashboardPage() {
   const [showModal, setShowModal] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; title: string } | null>(null)
   const [previewProject, setPreviewProject] = useState<Project | null>(null)
+  const [editingProject, setEditingProject] = useState<Project | null>(null)
 
   const isAdmin = currentUser?.role === 'admin' || currentUser?.role === 'superadmin'
+  const isSuperAdmin = currentUser?.role === 'superadmin'
 
   const userVotes = currentUser ? getVotesForUser(currentUser.id) : []
 
@@ -67,6 +70,11 @@ export default function DashboardPage() {
               onMaxVotes={() => showToast("You've used all 3 votes! Remove a vote to vote again.")}
               onDelete={isAdmin ? () => setDeleteTarget({ id: project.id, title: project.title }) : undefined}
               onPreview={() => setPreviewProject(project)}
+              onEdit={
+                isSuperAdmin || currentUser?.name === project.owner
+                  ? () => setEditingProject(project)
+                  : undefined
+              }
             />
           ))}
         </div>
@@ -89,6 +97,15 @@ export default function DashboardPage() {
       {/* Preview Modal */}
       {previewProject && (
         <PreviewModal project={previewProject} onClose={() => setPreviewProject(null)} />
+      )}
+
+      {/* Edit Project Modal */}
+      {editingProject && (
+        <EditProjectModal
+          project={editingProject}
+          onClose={() => setEditingProject(null)}
+          onSessionChanged={() => showToast('Your session was updated. Please try again.')}
+        />
       )}
 
       {/* Toast */}

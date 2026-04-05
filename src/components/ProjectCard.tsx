@@ -8,9 +8,10 @@ interface ProjectCardProps {
   onMaxVotes: () => void
   onDelete?: () => void
   onPreview?: () => void
+  onEdit?: () => void
 }
 
-export default function ProjectCard({ project, hasVoted, onToggleVote, onMaxVotes, onDelete, onPreview }: ProjectCardProps) {
+export default function ProjectCard({ project, hasVoted, onToggleVote, onMaxVotes, onDelete, onPreview, onEdit }: ProjectCardProps) {
   const [imgError, setImgError] = useState(false)
   const [bouncing, setBouncing] = useState(false)
   const bounceTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
@@ -53,6 +54,19 @@ export default function ProjectCard({ project, hasVoted, onToggleVote, onMaxVote
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="stroke-current">
             <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             <circle cx="12" cy="12" r="3" strokeWidth="1.5" />
+          </svg>
+        </button>
+      )}
+
+      {/* Edit button */}
+      {onEdit && (
+        <button
+          onClick={(e) => { e.stopPropagation(); onEdit() }}
+          className="absolute top-2 left-12 sm:left-11 z-10 w-9 h-9 sm:w-8 sm:h-8 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 cursor-pointer hover:bg-black/80 text-white/50 hover:text-white"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" className="stroke-current">
+            <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="m15 5 4 4" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </button>
       )}
