@@ -41,6 +41,7 @@ export function useFirestoreSync() {
           thumbnailUrl: data.thumbnailUrl,
           votes: data.votes ?? 0,
           createdAt: data.createdAt?.toDate?.() ?? new Date(),
+          demoUrl: data.demoUrl ?? undefined,
         }
       })
       _setProjects(projects)

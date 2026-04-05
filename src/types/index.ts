@@ -12,4 +12,5 @@ export type Project = {
   thumbnailUrl: string
   votes: number
   createdAt: Date
+  demoUrl?: string
 }

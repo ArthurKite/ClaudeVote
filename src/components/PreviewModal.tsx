@@ -88,14 +88,26 @@ export default function PreviewModal({ project, onClose }: PreviewModalProps) {
                 </svg>
               </div>
               <p className="text-sm text-white/40">Preview unavailable</p>
-              <a
-                href={project.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-sm text-indigo-400 hover:text-indigo-300 transition-colors"
-              >
-                Open in new tab →
-              </a>
+              <div className="flex items-center gap-3">
+                {project.demoUrl && (
+                  <a
+                    href={project.demoUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-purple-400 hover:text-purple-300 transition-colors flex items-center gap-1"
+                  >
+                    ▶ See demo
+                  </a>
+                )}
+                <a
+                  href={project.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-indigo-400 hover:text-indigo-300 transition-colors"
+                >
+                  Open in new tab →
+                </a>
+              </div>
             </div>
           ) : (
             <img
@@ -107,9 +119,19 @@ export default function PreviewModal({ project, onClose }: PreviewModalProps) {
             />
           )}
 
-          {/* Open in new tab floating button */}
+          {/* Floating action buttons */}
           {!imgError && !loading && (
-            <div className="sticky bottom-4 flex justify-center pb-2">
+            <div className="sticky bottom-4 flex justify-center gap-3 pb-2">
+              {project.demoUrl && (
+                <a
+                  href={project.demoUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-4 py-2 rounded-xl bg-purple-500/90 hover:bg-purple-500 text-white text-sm font-medium shadow-lg shadow-black/30 backdrop-blur-sm transition-all flex items-center gap-2"
+                >
+                  <span>▶</span> See demo
+                </a>
+              )}
               <a
                 href={project.url}
                 target="_blank"

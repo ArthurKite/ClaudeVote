@@ -24,7 +24,7 @@ interface AppState {
 
   registerUser: (name: string, role: 'player' | 'admin' | 'superadmin') => void
   logout: () => Promise<void>
-  addProject: (url: string, title: string, owner: string) => Promise<void>
+  addProject: (url: string, title: string, owner: string, demoUrl?: string) => Promise<void>
   deleteProject: (projectId: string) => Promise<void>
   toggleVote: (projectId: string) => Promise<string | void>
   getVotesForUser: (userId: string) => string[]
@@ -67,16 +67,20 @@ export const useAppStore = create<AppState>()((set, get) => ({
     set({ currentUser: null })
   },
 
-  addProject: async (url, title, owner) => {
+  addProject: async (url, title, owner, demoUrl?) => {
     const thumbnailUrl = `/api/screenshot?url=${encodeURIComponent(url)}`
-    const docRef = await addDoc(collection(db, 'projects'), {
+    const projectData: Record<string, unknown> = {
       url,
       title,
       owner,
       thumbnailUrl,
       votes: 0,
       createdAt: Timestamp.now(),
-    })
+    }
+    if (demoUrl) {
+      projectData.demoUrl = demoUrl
+    }
+    const docRef = await addDoc(collection(db, 'projects'), projectData)
     // Update the doc to store its own ID
     await updateDoc(docRef, { id: docRef.id })
   },

@@ -17,7 +17,9 @@ export default function AddProjectModal({ onClose }: AddProjectModalProps) {
   const [url, setUrl] = useState('')
   const [title, setTitle] = useState('')
   const [owner, setOwner] = useState('')
+  const [demoUrl, setDemoUrl] = useState('')
   const [urlError, setUrlError] = useState('')
+  const [demoUrlError, setDemoUrlError] = useState('')
   const [visible, setVisible] = useState(false)
   const [selectOpen, setSelectOpen] = useState(false)
   const [showDuplicateWarning, setShowDuplicateWarning] = useState(false)
@@ -69,13 +71,18 @@ export default function AddProjectModal({ onClose }: AddProjectModalProps) {
   const isValidUrl = (v: string) => /^https?:\/\/.+/.test(v)
 
   const doAdd = async () => {
-    await addProject(url.trim(), title.trim(), owner)
+    const trimmedDemo = demoUrl.trim()
+    await addProject(url.trim(), title.trim(), owner, trimmedDemo || undefined)
     handleClose()
   }
 
   const handleSubmit = async () => {
     if (!isValidUrl(url)) {
       setUrlError('URL must start with http:// or https://')
+      return
+    }
+    if (demoUrl.trim() && !isValidUrl(demoUrl)) {
+      setDemoUrlError('Must be a valid URL starting with http:// or https://')
       return
     }
     if (!title.trim() || !owner) return
@@ -174,6 +181,20 @@ export default function AddProjectModal({ onClose }: AddProjectModalProps) {
                 </div>
               )}
             </div>
+          </div>
+
+          {/* Demo video link (optional) */}
+          <div className="mb-6">
+            <label className="block text-xs font-medium text-white/40 mb-2">Demo video link</label>
+            <input
+              type="text"
+              placeholder="https://www.loom.com/share/..."
+              value={demoUrl}
+              onChange={(e) => { setDemoUrl(e.target.value); setDemoUrlError('') }}
+              className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3 text-sm text-white placeholder-white/25 outline-none transition-colors focus:border-indigo-400/40"
+            />
+            <p className="text-[11px] text-white/25 mt-1.5">Optional — link to a Loom, YouTube, or other video demo</p>
+            {demoUrlError && <p className="text-xs text-red-400 mt-1">{demoUrlError}</p>}
           </div>
 
           {/* Duplicate warning or buttons */}
