@@ -130,6 +130,10 @@ export const useAppStore = create<AppState>()((set, get) => ({
     const projectCheck = await getDoc(projectRef)
     if (!projectCheck.exists()) return 'project_deleted'
 
+    // Prevent voting on own projects
+    const projectData = projectCheck.data()
+    if (projectData.owner === currentUser.name) return 'own_project'
+
     const userVotes = get().votes[currentUser.id] ?? []
     const alreadyVoted = userVotes.includes(projectId)
     const voteRef = doc(db, 'votes', currentUser.id)

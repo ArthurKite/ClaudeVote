@@ -28,6 +28,7 @@ export default function DashboardPage() {
   const dismissToast = useCallback(() => setToast(null), [])
 
   const handleVoteClick = async (project: Project) => {
+    if (currentUser?.name === project.owner) return
     const hasVoted = userVotes.includes(project.id)
     if (hasVoted) {
       // Open unvote confirmation
@@ -105,6 +106,7 @@ export default function DashboardPage() {
               key={project.id}
               project={project}
               hasVoted={userVotes.includes(project.id)}
+              isOwner={currentUser?.name === project.owner}
               onVoteClick={() => handleVoteClick(project)}
               onDelete={isAdmin ? () => setDeleteTarget({ id: project.id, title: project.title }) : undefined}
               onPreview={() => setPreviewProject(project)}

@@ -5,12 +5,13 @@ interface ProjectCardProps {
   project: Project
   hasVoted: boolean
   onVoteClick: () => void
+  isOwner: boolean
   onDelete?: () => void
   onPreview?: () => void
   onEdit?: () => void
 }
 
-export default function ProjectCard({ project, hasVoted, onVoteClick, onDelete, onPreview, onEdit }: ProjectCardProps) {
+export default function ProjectCard({ project, hasVoted, onVoteClick, isOwner, onDelete, onPreview, onEdit }: ProjectCardProps) {
   const [imgError, setImgError] = useState(false)
 
   const truncatedUrl = project.url.replace(/^https?:\/\//, '').slice(0, 40) + (project.url.length > 48 ? '…' : '')
@@ -81,14 +82,20 @@ export default function ProjectCard({ project, hasVoted, onVoteClick, onDelete, 
 
         {/* Vote button */}
         <button
-          onClick={onVoteClick}
-          className={`w-full mt-3 flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 cursor-pointer ${
-            hasVoted
-              ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 shadow-[0_0_12px_rgba(99,102,241,0.15)]'
-              : 'bg-white/[0.04] text-white/40 border border-white/[0.06] hover:bg-white/[0.08] hover:text-white/60 hover:border-white/[0.1]'
+          onClick={isOwner ? undefined : onVoteClick}
+          disabled={isOwner}
+          className={`w-full mt-3 flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
+            isOwner
+              ? 'bg-white/[0.02] text-white/20 border border-white/[0.04] opacity-30 cursor-not-allowed'
+              : hasVoted
+                ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 shadow-[0_0_12px_rgba(99,102,241,0.15)] cursor-pointer'
+                : 'bg-white/[0.04] text-white/40 border border-white/[0.06] hover:bg-white/[0.08] hover:text-white/60 hover:border-white/[0.1] cursor-pointer'
           }`}
+          title={isOwner ? "You can't vote for your own project" : undefined}
         >
-          {hasVoted ? (
+          {isOwner ? (
+            "You can't vote for your own project"
+          ) : hasVoted ? (
             <>
               <svg width="14" height="14" viewBox="0 0 16 16" fill="none" className="stroke-current">
                 <path d="M3.5 8.5L6.5 11.5L12.5 4.5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
