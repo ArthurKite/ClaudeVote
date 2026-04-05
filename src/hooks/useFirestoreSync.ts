@@ -15,7 +15,9 @@ export function useFirestoreSync() {
   const _setVotes = useAppStore((s) => s._setVotes)
   const updateCurrentUserName = useAppStore((s) => s.updateCurrentUserName)
   const logout = useAppStore((s) => s.logout)
+  const cleanupSelfVotes = useAppStore((s) => s.cleanupSelfVotes)
   const currentUser = useAppStore((s) => s.currentUser)
+  const cleanupRanRef = useRef(false)
 
   // Use refs to avoid stale closures in the snapshot listener
   const currentUserRef = useRef(currentUser)
@@ -53,6 +55,12 @@ export function useFirestoreSync() {
         votes[d.id] = d.data().projectIds ?? []
       })
       _setVotes(votes)
+
+      // Run self-vote cleanup once after initial data is loaded
+      if (!cleanupRanRef.current) {
+        cleanupRanRef.current = true
+        cleanupSelfVotes().catch(() => { /* best effort */ })
+      }
     })
 
     return () => {

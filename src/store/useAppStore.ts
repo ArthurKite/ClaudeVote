@@ -6,6 +6,9 @@ import {
   deleteDoc,
   updateDoc,
   getDoc,
+  getDocs,
+  query,
+  where,
   runTransaction,
   arrayUnion,
   arrayRemove,
@@ -32,6 +35,7 @@ interface AppState {
   getVotesForUser: (userId: string) => string[]
 
   updateCurrentUserName: (newName: string) => void
+  cleanupSelfVotes: () => Promise<void>
 
   // Internal setters for real-time sync
   _setProjects: (projects: Project[]) => void
@@ -102,6 +106,33 @@ export const useAppStore = create<AppState>()((set, get) => ({
     }
     if (Object.keys(updates).length > 0) {
       await updateDoc(doc(db, 'projects', projectId), updates)
+    }
+
+    // If owner changed, remove self-vote if new owner had voted for this project
+    if (data.owner !== undefined) {
+      const newOwner = data.owner
+      const sessionsSnap = await getDocs(
+        query(collection(db, 'sessions'), where('playerName', '==', newOwner))
+      )
+      for (const sessDoc of sessionsSnap.docs) {
+        const sessionUserId = sessDoc.id
+        const voteDocRef = doc(db, 'votes', sessionUserId)
+        const voteSnap = await getDoc(voteDocRef)
+        if (voteSnap.exists()) {
+          const votedIds: string[] = voteSnap.data().projectIds ?? []
+          if (votedIds.includes(projectId)) {
+            await updateDoc(voteDocRef, { projectIds: arrayRemove(projectId) })
+            const projectRef = doc(db, 'projects', projectId)
+            await runTransaction(db, async (transaction) => {
+              const projSnap = await transaction.get(projectRef)
+              if (projSnap.exists()) {
+                const currentVotes = projSnap.data().votes ?? 0
+                transaction.update(projectRef, { votes: Math.max(0, currentVotes - 1) })
+              }
+            })
+          }
+        }
+      }
     }
   },
 
@@ -176,6 +207,39 @@ export const useAppStore = create<AppState>()((set, get) => ({
     const updated = { ...currentUser, name: newName }
     sessionStorage.setItem('claudevote-user', JSON.stringify(updated))
     set({ currentUser: updated })
+  },
+
+  cleanupSelfVotes: async () => {
+    const projectsSnap = await getDocs(collection(db, 'projects'))
+    for (const projDoc of projectsSnap.docs) {
+      const projData = projDoc.data()
+      const ownerName = projData.owner
+      if (!ownerName || ownerName === 'Deleted player') continue
+
+      // Find sessions for this owner
+      const sessionsSnap = await getDocs(
+        query(collection(db, 'sessions'), where('playerName', '==', ownerName))
+      )
+      for (const sessDoc of sessionsSnap.docs) {
+        const sessionUserId = sessDoc.id
+        const voteDocRef = doc(db, 'votes', sessionUserId)
+        const voteSnap = await getDoc(voteDocRef)
+        if (voteSnap.exists()) {
+          const votedIds: string[] = voteSnap.data().projectIds ?? []
+          if (votedIds.includes(projDoc.id)) {
+            await updateDoc(voteDocRef, { projectIds: arrayRemove(projDoc.id) })
+            const projectRef = doc(db, 'projects', projDoc.id)
+            await runTransaction(db, async (transaction) => {
+              const snap = await transaction.get(projectRef)
+              if (snap.exists()) {
+                const currentVotes = snap.data().votes ?? 0
+                transaction.update(projectRef, { votes: Math.max(0, currentVotes - 1) })
+              }
+            })
+          }
+        }
+      }
+    }
   },
 
   _setProjects: (projects) => set({ projects }),
