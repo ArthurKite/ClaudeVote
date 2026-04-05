@@ -1,33 +1,17 @@
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 import type { Project } from '../types'
 
 interface ProjectCardProps {
   project: Project
   hasVoted: boolean
-  onToggleVote: () => Promise<string | void>
-  onMaxVotes: () => void
+  onVoteClick: () => void
   onDelete?: () => void
   onPreview?: () => void
   onEdit?: () => void
 }
 
-export default function ProjectCard({ project, hasVoted, onToggleVote, onMaxVotes, onDelete, onPreview, onEdit }: ProjectCardProps) {
+export default function ProjectCard({ project, hasVoted, onVoteClick, onDelete, onPreview, onEdit }: ProjectCardProps) {
   const [imgError, setImgError] = useState(false)
-  const [bouncing, setBouncing] = useState(false)
-  const bounceTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
-
-  const handleVote = async () => {
-    const result = await onToggleVote()
-    if (result === 'max_reached') {
-      onMaxVotes()
-      return
-    }
-    if (result === 'project_deleted') return
-    // Trigger bounce
-    setBouncing(true)
-    clearTimeout(bounceTimer.current)
-    bounceTimer.current = setTimeout(() => setBouncing(false), 300)
-  }
 
   const truncatedUrl = project.url.replace(/^https?:\/\//, '').slice(0, 40) + (project.url.length > 48 ? '…' : '')
 
@@ -96,23 +80,25 @@ export default function ProjectCard({ project, hasVoted, onToggleVote, onMaxVote
         <p className="text-[11px] text-white/25 mt-0.5 truncate">{truncatedUrl}</p>
 
         {/* Vote button */}
-        <div className="mt-3 flex items-center justify-between">
-          <button
-            onClick={handleVote}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-all duration-200 cursor-pointer ${
-              hasVoted
-                ? 'bg-indigo-500/20 text-indigo-300 shadow-[0_0_12px_rgba(99,102,241,0.2)]'
-                : 'bg-white/[0.04] text-white/40 hover:bg-white/[0.08] hover:text-white/60'
-            }`}
-          >
-            <span
-              className={`inline-block transition-transform duration-300 ${
-                bouncing ? 'animate-[voteBounce_0.3s_ease-out]' : ''
-              }`}
-            >👍</span>
-            <span className="font-medium">{project.votes}</span>
-          </button>
-        </div>
+        <button
+          onClick={onVoteClick}
+          className={`w-full mt-3 flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 cursor-pointer ${
+            hasVoted
+              ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 shadow-[0_0_12px_rgba(99,102,241,0.15)]'
+              : 'bg-white/[0.04] text-white/40 border border-white/[0.06] hover:bg-white/[0.08] hover:text-white/60 hover:border-white/[0.1]'
+          }`}
+        >
+          {hasVoted ? (
+            <>
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" className="stroke-current">
+                <path d="M3.5 8.5L6.5 11.5L12.5 4.5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              You voted for this project
+            </>
+          ) : (
+            'Vote for this project'
+          )}
+        </button>
       </div>
     </div>
   )
