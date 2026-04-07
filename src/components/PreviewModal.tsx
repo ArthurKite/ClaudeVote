@@ -16,6 +16,17 @@ export default function PreviewModal({ project, onClose }: PreviewModalProps) {
     requestAnimationFrame(() => setVisible(true))
   }, [])
 
+  // Timeout fallback: if image hasn't loaded after 15s, show error state
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (loading && !imgError) {
+        setImgError(true)
+        setLoading(false)
+      }
+    }, 15000)
+    return () => clearTimeout(timer)
+  }, [loading, imgError])
+
   const handleClose = () => {
     setVisible(false)
     setTimeout(onClose, 200)
