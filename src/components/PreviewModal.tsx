@@ -37,8 +37,8 @@ export default function PreviewModal({ project, onClose }: PreviewModalProps) {
       ? project.url.slice(0, 60) + '…'
       : project.url
 
-  // Use Microlink to get a high-res screenshot preview
-  const screenshotUrl = `https://api.microlink.io/?url=${encodeURIComponent(project.url)}&screenshot=true&meta=false&embed=screenshot.url&screenshot.width=1280&screenshot.height=800`
+  // Use the project's thumbnail URL (goes through /api/screenshot proxy)
+  const screenshotUrl = project.thumbnailUrl
 
   return createPortal(
     <div
