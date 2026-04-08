@@ -4,6 +4,7 @@ import { useFirestoreSync } from './hooks/useFirestoreSync'
 import RegisterPage from './pages/RegisterPage'
 import DashboardPage from './pages/DashboardPage'
 import StatsPage from './pages/StatsPage'
+import AccompagnementPage from './pages/AccompagnementPage'
 import Layout from './components/Layout'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -43,6 +44,7 @@ function App() {
             }
           />
         </Route>
+        <Route path="/accompagnement" element={<AccompagnementPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
