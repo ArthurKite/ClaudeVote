@@ -25,6 +25,7 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(true)
   const [selectedPlayer, setSelectedPlayer] = useState('')
   const [dropdownOpen, setDropdownOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
   const [kickedBanner, setKickedBanner] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const navigate = useNavigate()
@@ -208,46 +209,67 @@ export default function RegisterPage() {
                 </div>
               ) : (
                 <div ref={dropdownRef} className="relative">
-                  <button
-                    type="button"
-                    onClick={() => setDropdownOpen(!dropdownOpen)}
-                    className={`w-full bg-transparent border-b pb-3 text-lg text-left outline-none transition-colors flex items-center justify-between cursor-pointer ${
-                      dropdownOpen ? 'border-indigo-400/60' : 'border-white/20'
-                    } ${selectedPlayer ? 'text-white' : 'text-white/30'}`}
-                  >
-                    <span>{selectedPlayer || 'Select your name'}</span>
+                  <div className="relative flex items-center">
+                    <input
+                      type="text"
+                      value={dropdownOpen ? searchQuery : (selectedPlayer || '')}
+                      placeholder="Search your name..."
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      onFocus={() => { setDropdownOpen(true); setSearchQuery('') }}
+                      onBlur={() => {
+                        // Delay to allow click on dropdown item
+                        setTimeout(() => {
+                          if (!dropdownRef.current?.contains(document.activeElement)) {
+                            setSearchQuery('')
+                          }
+                        }, 150)
+                      }}
+                      className={`w-full bg-transparent border-b pb-3 text-lg outline-none transition-colors pr-8 ${
+                        dropdownOpen ? 'border-indigo-400/60' : 'border-white/20'
+                      } ${!dropdownOpen && selectedPlayer ? 'text-white' : dropdownOpen ? 'text-white' : 'text-white/30'} placeholder-white/30`}
+                    />
                     <svg
                       width="16" height="16" viewBox="0 0 16 16" fill="none"
-                      className={`text-white/30 transition-transform duration-200 ${dropdownOpen ? 'rotate-180' : ''}`}
+                      className={`absolute right-0 bottom-3 text-white/30 transition-transform duration-200 pointer-events-none ${dropdownOpen ? 'rotate-180' : ''}`}
                     >
                       <path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
-                  </button>
-                  {dropdownOpen && (
-                    <div className="absolute top-full left-0 right-0 mt-2 rounded-xl border border-white/[0.08] bg-[#1a1a26] shadow-xl overflow-y-auto max-h-48 z-10">
-                      {playerNames.map((pName) => {
-                        const inUse = activeSessions.includes(pName)
-                        return (
-                          <button
-                            key={pName}
-                            type="button"
-                            disabled={inUse}
-                            onClick={() => { setSelectedPlayer(pName); setDropdownOpen(false) }}
-                            className={`w-full px-4 py-3 text-sm text-left transition-colors ${
-                              inUse
-                                ? 'text-white/25 cursor-not-allowed'
-                                : selectedPlayer === pName
-                                  ? 'bg-indigo-500/15 text-indigo-300 cursor-pointer'
-                                  : 'text-white/70 hover:bg-white/[0.06] cursor-pointer'
-                            }`}
-                          >
-                            {pName}
-                            {inUse && <span className="ml-2 text-xs text-white/20">(in use)</span>}
-                          </button>
-                        )
-                      })}
-                    </div>
-                  )}
+                  </div>
+                  {dropdownOpen && (() => {
+                    const query = searchQuery.toLowerCase()
+                    const filtered = playerNames.filter((pName) =>
+                      pName.toLowerCase().includes(query)
+                    )
+                    return (
+                      <div className="absolute top-full left-0 right-0 mt-2 rounded-xl border border-white/[0.08] bg-[#1a1a26] shadow-xl overflow-y-auto max-h-48 z-10">
+                        {filtered.length === 0 ? (
+                          <div className="px-4 py-3 text-sm text-white/30 text-center">No results</div>
+                        ) : (
+                          filtered.map((pName) => {
+                            const inUse = activeSessions.includes(pName)
+                            return (
+                              <button
+                                key={pName}
+                                type="button"
+                                disabled={inUse}
+                                onClick={() => { setSelectedPlayer(pName); setSearchQuery(''); setDropdownOpen(false) }}
+                                className={`w-full px-4 py-3 text-sm text-left transition-colors ${
+                                  inUse
+                                    ? 'text-white/25 cursor-not-allowed'
+                                    : selectedPlayer === pName
+                                      ? 'bg-indigo-500/15 text-indigo-300 cursor-pointer'
+                                      : 'text-white/70 hover:bg-white/[0.06] cursor-pointer'
+                                }`}
+                              >
+                                {pName}
+                                {inUse && <span className="ml-2 text-xs text-white/20">(in use)</span>}
+                              </button>
+                            )
+                          })
+                        )}
+                      </div>
+                    )
+                  })()}
                 </div>
               )}
             </div>
