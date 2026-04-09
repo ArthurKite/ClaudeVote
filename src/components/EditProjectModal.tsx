@@ -74,6 +74,7 @@ export default function EditProjectModal({ project, onClose, onSessionChanged }:
   if (currentName && !ownerOptions.some((n) => n.toLowerCase() === currentName.toLowerCase())) {
     ownerOptions.push(currentName)
   }
+  ownerOptions.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }))
 
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {

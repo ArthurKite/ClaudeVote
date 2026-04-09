@@ -47,7 +47,7 @@ export default function AddProjectModal({ onClose }: AddProjectModalProps) {
   if (currentName && !ownerOptions.some((n) => n.toLowerCase() === currentName.toLowerCase())) {
     ownerOptions.push(currentName)
   }
-  const uniqueOwners = ownerOptions
+  const uniqueOwners = ownerOptions.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }))
 
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {

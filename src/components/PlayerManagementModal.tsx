@@ -456,7 +456,7 @@ export default function PlayerManagementModal({ onClose }: PlayerManagementModal
                     <div className="px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-white/30">
                       Admins
                     </div>
-                    {adminSessions.map((session) =>
+                    {[...adminSessions].sort((a, b) => a.playerName.localeCompare(b.playerName, undefined, { sensitivity: 'base' })).map((session) =>
                       renderPlayerRow(
                         session.playerName,
                         session.role === 'superadmin' ? 'SUPER' : 'ADMIN'
@@ -472,7 +472,7 @@ export default function PlayerManagementModal({ onClose }: PlayerManagementModal
                 {playerNames.length === 0 ? (
                   <p className="text-white/30 text-sm text-center py-8">No players yet</p>
                 ) : (
-                  playerNames.map((name) => renderPlayerRow(name))
+                  [...playerNames].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' })).map((name) => renderPlayerRow(name))
                 )}
               </div>
             )}

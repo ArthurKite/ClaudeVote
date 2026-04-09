@@ -237,9 +237,9 @@ export default function RegisterPage() {
                   </div>
                   {dropdownOpen && (() => {
                     const query = searchQuery.toLowerCase()
-                    const filtered = playerNames.filter((pName) =>
-                      pName.toLowerCase().includes(query)
-                    )
+                    const filtered = playerNames
+                      .filter((pName) => pName.toLowerCase().includes(query))
+                      .sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }))
                     return (
                       <div className="absolute top-full left-0 right-0 mt-2 rounded-xl border border-white/[0.08] bg-[#1a1a26] shadow-xl overflow-y-auto max-h-48 z-10">
                         {filtered.length === 0 ? (
