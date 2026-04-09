@@ -177,7 +177,7 @@ export default function RegisterPage() {
             >
               <div className="text-2xl mb-2">🎮</div>
               <div className={`font-semibold text-sm ${role === 'player' ? 'text-indigo-300' : 'text-white/80'}`}>
-                Player
+                Player / Voter
               </div>
               <div className="text-xs text-white/40 mt-1">Vote for your favorites</div>
             </button>
